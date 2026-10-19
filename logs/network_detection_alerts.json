@@ -1,0 +1,272 @@
+[
+  {
+    "actual_label": "Benign",
+    "agent": "Network Detection Agent",
+    "timestamp": "2026-10-06T23:33:33.912570",
+    "prediction": "Benign",
+    "confidence": 0.68,
+    "severity": "LOW",
+    "status": "NORMAL",
+    "note": "confidence is the model's predicted probability for this class, not proof of an attack.",
+    "class_probabilities": {
+      "Benign": 0.68,
+      "Infilteration": 0.32
+    },
+    "network_context": {
+      "Dst Port": 443,
+      "Protocol": 6,
+      "Flow Duration": 117238347,
+      "Flow Pkts/s": 0.3071,
+      "Flow Byts/s": 73.0989,
+      "Fwd Pkts/s": 0.1365,
+      "Bwd Pkts/s": 0.1706,
+      "SYN Flag Cnt": 0,
+      "RST Flag Cnt": 1,
+      "Tot Fwd Pkts": 16,
+      "Tot Bwd Pkts": 20
+    }
+  },
+  {
+    "actual_label": "Benign",
+    "agent": "Network Detection Agent",
+    "timestamp": "2026-10-06T23:33:33.912570",
+    "prediction": "Benign",
+    "confidence": 0.94,
+    "severity": "LOW",
+    "status": "NORMAL",
+    "note": "confidence is the model's predicted probability for this class, not proof of an attack.",
+    "class_probabilities": {
+      "Benign": 0.94,
+      "Infilteration": 0.06
+    },
+    "network_context": {
+      "Dst Port": 443,
+      "Protocol": 6,
+      "Flow Duration": 432296,
+      "Flow Pkts/s": 34.6984,
+      "Flow Byts/s": 8285.9892,
+      "Fwd Pkts/s": 20.8191,
+      "Bwd Pkts/s": 13.8794,
+      "SYN Flag Cnt": 0,
+      "RST Flag Cnt": 1,
+      "Tot Fwd Pkts": 9,
+      "Tot Bwd Pkts": 6
+    }
+  },
+  {
+    "actual_label": "Benign",
+    "agent": "Network Detection Agent",
+    "timestamp": "2026-10-06T23:33:33.912570",
+    "prediction": "Benign",
+    "confidence": 0.82,
+    "severity": "LOW",
+    "status": "NORMAL",
+    "note": "confidence is the model's predicted probability for this class, not proof of an attack.",
+    "class_probabilities": {
+      "Benign": 0.82,
+      "Infilteration": 0.18
+    },
+    "network_context": {
+      "Dst Port": 443,
+      "Protocol": 6,
+      "Flow Duration": 117189762,
+      "Flow Pkts/s": 0.2048,
+      "Flow Byts/s": 47.5383,
+      "Fwd Pkts/s": 0.1109,
+      "Bwd Pkts/s": 0.0939,
+      "SYN Flag Cnt": 0,
+      "RST Flag Cnt": 1,
+      "Tot Fwd Pkts": 13,
+      "Tot Bwd Pkts": 11
+    }
+  },
+  {
+    "actual_label": "Benign",
+    "agent": "Network Detection Agent",
+    "timestamp": "2026-10-06T23:33:33.912570",
+    "prediction": "Benign",
+    "confidence": 0.73,
+    "severity": "LOW",
+    "status": "NORMAL",
+    "note": "confidence is the model's predicted probability for this class, not proof of an attack.",
+    "class_probabilities": {
+      "Benign": 0.73,
+      "Infilteration": 0.27
+    },
+    "network_context": {
+      "Dst Port": 50578,
+      "Protocol": 6,
+      "Flow Duration": 276,
+      "Flow Pkts/s": 18115.942,
+      "Flow Byts/s": 2876811.594,
+      "Fwd Pkts/s": 3623.1884,
+      "Bwd Pkts/s": 14492.7536,
+      "SYN Flag Cnt": 1,
+      "RST Flag Cnt": 0,
+      "Tot Fwd Pkts": 1,
+      "Tot Bwd Pkts": 4
+    }
+  },
+  {
+    "actual_label": "Benign",
+    "agent": "Network Detection Agent",
+    "timestamp": "2026-10-06T23:33:33.915274",
+    "prediction": "Benign",
+    "confidence": 1.0,
+    "severity": "LOW",
+    "status": "NORMAL",
+    "note": "confidence is the model's predicted probability for this class, not proof of an attack.",
+    "class_probabilities": {
+      "Benign": 1.0,
+      "Infilteration": 0.0
+    },
+    "network_context": {
+      "Dst Port": 50151,
+      "Protocol": 6,
+      "Flow Duration": 20,
+      "Flow Pkts/s": 100000.0,
+      "Flow Byts/s": 0.0,
+      "Fwd Pkts/s": 100000.0,
+      "Bwd Pkts/s": 0.0,
+      "SYN Flag Cnt": 0,
+      "RST Flag Cnt": 0,
+      "Tot Fwd Pkts": 2,
+      "Tot Bwd Pkts": 0
+    }
+  },
+  {
+    "actual_label": "Infilteration",
+    "agent": "Network Detection Agent",
+    "timestamp": "2026-10-06T23:33:33.915274",
+    "prediction": "Infilteration",
+    "confidence": 0.9,
+    "severity": "HIGH",
+    "status": "SUSPICIOUS",
+    "note": "confidence is the model's predicted probability for this class, not proof of an attack.",
+    "class_probabilities": {
+      "Benign": 0.1,
+      "Infilteration": 0.9
+    },
+    "network_context": {
+      "Dst Port": 3389,
+      "Protocol": 6,
+      "Flow Duration": 5259198,
+      "Flow Pkts/s": 3.993,
+      "Flow Byts/s": 745.5509,
+      "Fwd Pkts/s": 2.2817,
+      "Bwd Pkts/s": 1.7113,
+      "SYN Flag Cnt": 0,
+      "RST Flag Cnt": 0,
+      "Tot Fwd Pkts": 12,
+      "Tot Bwd Pkts": 9
+    }
+  },
+  {
+    "actual_label": "Infilteration",
+    "agent": "Network Detection Agent",
+    "timestamp": "2026-10-06T23:33:33.915274",
+    "prediction": "Infilteration",
+    "confidence": 0.85,
+    "severity": "HIGH",
+    "status": "SUSPICIOUS",
+    "note": "confidence is the model's predicted probability for this class, not proof of an attack.",
+    "class_probabilities": {
+      "Benign": 0.15,
+      "Infilteration": 0.85
+    },
+    "network_context": {
+      "Dst Port": 443,
+      "Protocol": 6,
+      "Flow Duration": 44420,
+      "Flow Pkts/s": 360.1981,
+      "Flow Byts/s": 97478.6132,
+      "Fwd Pkts/s": 202.6114,
+      "Bwd Pkts/s": 157.5867,
+      "SYN Flag Cnt": 0,
+      "RST Flag Cnt": 1,
+      "Tot Fwd Pkts": 9,
+      "Tot Bwd Pkts": 7
+    }
+  },
+  {
+    "actual_label": "Infilteration",
+    "agent": "Network Detection Agent",
+    "timestamp": "2026-10-06T23:33:33.915274",
+    "prediction": "Benign",
+    "confidence": 0.81,
+    "severity": "LOW",
+    "status": "NORMAL",
+    "note": "confidence is the model's predicted probability for this class, not proof of an attack.",
+    "class_probabilities": {
+      "Benign": 0.81,
+      "Infilteration": 0.19
+    },
+    "network_context": {
+      "Dst Port": 53,
+      "Protocol": 17,
+      "Flow Duration": 48408,
+      "Flow Pkts/s": 82.631,
+      "Flow Byts/s": 4792.5963,
+      "Fwd Pkts/s": 41.3155,
+      "Bwd Pkts/s": 41.3155,
+      "SYN Flag Cnt": 0,
+      "RST Flag Cnt": 0,
+      "Tot Fwd Pkts": 2,
+      "Tot Bwd Pkts": 2
+    }
+  },
+  {
+    "actual_label": "Infilteration",
+    "agent": "Network Detection Agent",
+    "timestamp": "2026-10-06T23:33:33.915274",
+    "prediction": "Infilteration",
+    "confidence": 0.5903,
+    "severity": "HIGH",
+    "status": "SUSPICIOUS",
+    "note": "confidence is the model's predicted probability for this class, not proof of an attack.",
+    "class_probabilities": {
+      "Benign": 0.4097,
+      "Infilteration": 0.5903
+    },
+    "network_context": {
+      "Dst Port": 53,
+      "Protocol": 17,
+      "Flow Duration": 227,
+      "Flow Pkts/s": 8810.5727,
+      "Flow Byts/s": 387665.1982,
+      "Fwd Pkts/s": 4405.2863,
+      "Bwd Pkts/s": 4405.2863,
+      "SYN Flag Cnt": 0,
+      "RST Flag Cnt": 0,
+      "Tot Fwd Pkts": 1,
+      "Tot Bwd Pkts": 1
+    }
+  },
+  {
+    "actual_label": "Infilteration",
+    "agent": "Network Detection Agent",
+    "timestamp": "2026-10-06T23:33:33.915274",
+    "prediction": "Infilteration",
+    "confidence": 0.83,
+    "severity": "HIGH",
+    "status": "SUSPICIOUS",
+    "note": "confidence is the model's predicted probability for this class, not proof of an attack.",
+    "class_probabilities": {
+      "Benign": 0.17,
+      "Infilteration": 0.83
+    },
+    "network_context": {
+      "Dst Port": 50743,
+      "Protocol": 6,
+      "Flow Duration": 18,
+      "Flow Pkts/s": 111111.1111,
+      "Flow Byts/s": 0.0,
+      "Fwd Pkts/s": 55555.5556,
+      "Bwd Pkts/s": 55555.5556,
+      "SYN Flag Cnt": 0,
+      "RST Flag Cnt": 0,
+      "Tot Fwd Pkts": 1,
+      "Tot Bwd Pkts": 1
+    }
+  }
+]

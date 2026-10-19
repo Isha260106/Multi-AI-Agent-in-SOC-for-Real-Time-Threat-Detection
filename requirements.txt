@@ -1,0 +1,36 @@
+# ==============================================================================
+# Multi-Agent SOC -- Python Requirements
+# ==============================================================================
+#
+# Stage 1: Dataset Preparation
+# Stage 2: Random Forest Baseline Model
+# Stage 3: Network Monitoring & Detection Agent
+# Stage 4: Real-Time Event Streaming
+#
+# Install all dependencies with:
+#   pip install -r requirements.txt
+#
+# ==============================================================================
+
+# Core data science
+numpy>=1.24.0
+pandas>=2.0.0
+scikit-learn>=1.3.0
+joblib>=1.3.0
+
+# Visualisation (feature importance charts)
+matplotlib>=3.7.0
+seaborn>=0.12.0
+
+# ==============================================================================
+# Stage 4: Event Streaming (Optional)
+#
+# The in-process Queue transport (DEFAULT_TRANSPORT = "queue") requires NO
+# additional packages -- it uses Python's built-in queue module.
+#
+# For real Kafka broker integration (requires Apache Kafka + Java):
+#   pip install kafka-python
+#
+# Uncomment the line below to enable Kafka transport:
+# kafka-python>=2.0.0
+# ==============================================================================

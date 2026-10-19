@@ -1,0 +1,60 @@
+# ==============================================================================
+# Multi-Agent SOC -- Git Ignore Rules
+# ==============================================================================
+
+# Python bytecode & cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual Environment
+venv/
+env/
+ENV/
+.venv/
+
+# Testing & Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+*.log
+*.log.*
+
+# IDE & Editor Settings
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Temporary & Scratch Files
+*.tmp
+*.bak
+*~
+trace*.txt
+err.txt
+test_out.txt
+
+# Databases & Runtime State
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+data/*.db
+
+# Runtime Log Files & JSON Alert Dumps
+logs/*.log
+logs/*.txt
+
+# Data files (Datasets must NOT be pushed to GitHub due to size and privacy)
+data/processed/*.csv
+data/**/*.csv
+
+# Large Trained Models & Binary Weights
+# Note: network_detection_model.pkl is ~800MB (exceeds GitHub's 100MB hard limit)
+models/*.pkl
+models/*.joblib
