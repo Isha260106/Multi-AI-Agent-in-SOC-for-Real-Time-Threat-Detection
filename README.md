@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Multi-Agent AI Security Operations Center (SOC)
 ## Real-Time Threat Detection Pipeline
 
@@ -39,3 +40,6 @@ If you are evaluating explicit subsets testing components dynamically, `realtime
 
 #### Known Constraints
 Since this is natively lab-scaled architecture mocking PCAP intercepts, the underlying bounds do not scale appropriately against >500 GB massive raw logs mapping high velocity architectures. Real-time implementation metrics mapped directly to `interval` timings rely explicitly on Pandas chunk extraction methodologies.
+=======
+# Multi-AI-Agent-in-SOC-for-Real-Time-Threat-Detection
+>>>>>>> fa080a8abfa850e4f66a49b71038e827638980fc
