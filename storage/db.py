@@ -127,6 +127,63 @@ CREATE TABLE IF NOT EXISTS incidents (
 );
 """
 
+_CREATE_ASSESSMENTS = """
+CREATE TABLE IF NOT EXISTS threat_assessments (
+    id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+    assessment_id       TEXT UNIQUE NOT NULL,
+    event_id            TEXT NOT NULL,
+    category            TEXT NOT NULL,
+    severity            TEXT NOT NULL,
+    network_prediction  TEXT NULL,
+    anomaly_prediction  TEXT NULL,
+    network_confidence  REAL NULL,
+    anomaly_score       REAL NULL,
+    explanation         TEXT NOT NULL,
+    actual_label        TEXT NULL,
+    timestamp           TEXT NOT NULL,
+    created_at          TEXT NOT NULL,
+    FOREIGN KEY(event_id) REFERENCES events(event_id)
+);
+"""
+
+_CREATE_INVESTIGATIONS = """
+CREATE TABLE IF NOT EXISTS threat_investigations (
+    id                      INTEGER PRIMARY KEY AUTOINCREMENT,
+    investigation_id        TEXT UNIQUE NOT NULL,
+    event_id                TEXT UNIQUE NOT NULL,
+    threat_category         TEXT NOT NULL,
+    severity                TEXT NOT NULL,
+    investigation_status    TEXT NOT NULL,
+    summary                 TEXT NOT NULL,
+    findings_by_agent_json  TEXT NOT NULL,
+    supporting_evidence_json TEXT NOT NULL,
+    conflicting_signals_json TEXT NOT NULL,
+    reasoning_json          TEXT NOT NULL,
+    limitations_json        TEXT NOT NULL,
+    recommended_next_steps_json TEXT NOT NULL,
+    timestamp               TEXT NOT NULL,
+    created_at              TEXT NOT NULL,
+    FOREIGN KEY(event_id) REFERENCES events(event_id)
+);
+"""
+
+_CREATE_THREAT_INTEL_CACHE = """
+CREATE TABLE IF NOT EXISTS threat_intel_cache (
+    id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+    indicator_type      TEXT NOT NULL,
+    indicator_value     TEXT NOT NULL,
+    provider            TEXT NOT NULL,
+    verdict             TEXT NOT NULL,
+    reputation_score    REAL NULL,
+    raw_response_json   TEXT NOT NULL,
+    evidence_links_json TEXT NOT NULL,
+    last_checked        TEXT NOT NULL,
+    expires_at          TEXT NOT NULL,
+    is_mock             INTEGER NOT NULL DEFAULT 0,
+    UNIQUE(indicator_type, indicator_value, provider)
+);
+"""
+
 # Indexes for the most common query patterns
 _CREATE_INDEXES = [
     "CREATE INDEX IF NOT EXISTS idx_alerts_timestamp  ON alerts(timestamp);",
@@ -137,6 +194,17 @@ _CREATE_INDEXES = [
     "CREATE INDEX IF NOT EXISTS idx_incidents_timestamp ON incidents(timestamp);",
     "CREATE INDEX IF NOT EXISTS idx_incidents_severity  ON incidents(severity);",
     "CREATE INDEX IF NOT EXISTS idx_incidents_event_id  ON incidents(event_id);",
+    "CREATE INDEX IF NOT EXISTS idx_assessments_timestamp ON threat_assessments(timestamp);",
+    "CREATE INDEX IF NOT EXISTS idx_assessments_category  ON threat_assessments(category);",
+    "CREATE INDEX IF NOT EXISTS idx_assessments_severity  ON threat_assessments(severity);",
+    "CREATE INDEX IF NOT EXISTS idx_assessments_event_id  ON threat_assessments(event_id);",
+    "CREATE INDEX IF NOT EXISTS idx_investigations_timestamp ON threat_investigations(timestamp);",
+    "CREATE INDEX IF NOT EXISTS idx_investigations_status    ON threat_investigations(investigation_status);",
+    "CREATE INDEX IF NOT EXISTS idx_investigations_category  ON threat_investigations(threat_category);",
+    "CREATE INDEX IF NOT EXISTS idx_investigations_event_id  ON threat_investigations(event_id);",
+    "CREATE INDEX IF NOT EXISTS idx_intel_cache_indicator    ON threat_intel_cache(indicator_value);",
+    "CREATE INDEX IF NOT EXISTS idx_intel_cache_expires      ON threat_intel_cache(expires_at);",
+    "CREATE INDEX IF NOT EXISTS idx_intel_cache_provider     ON threat_intel_cache(provider);",
 ]
 
 # ---------------------------------------------------------------------------
@@ -166,6 +234,34 @@ INSERT OR IGNORE INTO incidents
 VALUES
     (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 """
+
+_INSERT_ASSESSMENT = """
+INSERT OR IGNORE INTO threat_assessments
+    (assessment_id, event_id, category, severity, network_prediction,
+     anomaly_prediction, network_confidence, anomaly_score, explanation,
+     actual_label, timestamp, created_at)
+VALUES
+    (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+"""
+
+_INSERT_INVESTIGATION = """
+INSERT OR IGNORE INTO threat_investigations
+    (investigation_id, event_id, threat_category, severity,
+     investigation_status, summary, findings_by_agent_json,
+     supporting_evidence_json, conflicting_signals_json, reasoning_json,
+     limitations_json, recommended_next_steps_json, timestamp, created_at)
+VALUES
+    (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+"""
+
+_INSERT_THREAT_INTEL = """
+INSERT OR REPLACE INTO threat_intel_cache
+    (indicator_type, indicator_value, provider, verdict, reputation_score,
+     raw_response_json, evidence_links_json, last_checked, expires_at, is_mock)
+VALUES
+    (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+"""
+
 
 
 # ---------------------------------------------------------------------------
@@ -217,6 +313,9 @@ class AlertStore:
         cur.execute(_CREATE_EVENTS)
         cur.execute(_CREATE_ALERTS)
         cur.execute(_CREATE_INCIDENTS)
+        cur.execute(_CREATE_ASSESSMENTS)
+        cur.execute(_CREATE_INVESTIGATIONS)
+        cur.execute(_CREATE_THREAT_INTEL_CACHE)
         for idx_sql in _CREATE_INDEXES:
             cur.execute(idx_sql)
         self._conn.commit()
@@ -401,6 +500,201 @@ class AlertStore:
             raise
 
     # ------------------------------------------------------------------
+    # Write: threat assessments (Stage 9A)
+    # ------------------------------------------------------------------
+
+    def save_assessment(self, assessment: dict) -> bool:
+        """
+        Insert a unified threat assessment into the threat_assessments table.
+
+        Args:
+            assessment: Structured assessment from ThreatAssessmentEngine.
+
+        Returns:
+            True if inserted, False if ignored (idempotent duplicate on assessment_id).
+        """
+        assessment_id = assessment.get("assessment_id")
+        if not assessment_id:
+            raise ValueError("Threat assessment is missing 'assessment_id'.")
+
+        event_id = assessment.get("event_id")
+        if not event_id:
+            raise ValueError("Threat assessment is missing 'event_id'.")
+
+        now = datetime.datetime.now().isoformat()
+        ts = assessment.get("timestamp") or now
+        created = assessment.get("created_at") or now
+
+        # Extract predictions and scores safely
+        net_pred = assessment.get("network_prediction")
+        anom_pred = assessment.get("anomaly_prediction")
+        if net_pred is None and isinstance(assessment.get("predictions"), dict):
+            net_pred = assessment["predictions"].get("network")
+        if anom_pred is None and isinstance(assessment.get("predictions"), dict):
+            anom_pred = assessment["predictions"].get("anomaly")
+
+        net_conf = assessment.get("network_confidence")
+        anom_score = assessment.get("anomaly_score")
+        if net_conf is None and isinstance(assessment.get("scores"), dict):
+            net_conf = assessment["scores"].get("network_confidence")
+        if anom_score is None and isinstance(assessment.get("scores"), dict):
+            anom_score = assessment["scores"].get("anomaly_score")
+
+        try:
+            cur = self._conn.execute(
+                _INSERT_ASSESSMENT,
+                (
+                    assessment_id,
+                    event_id,
+                    assessment.get("category", "Unknown"),
+                    assessment.get("severity", "INFORMATIONAL"),
+                    net_pred,
+                    anom_pred,
+                    net_conf,
+                    anom_score,
+                    assessment.get("explanation", ""),
+                    assessment.get("actual_label"),
+                    ts,
+                    created,
+                ),
+            )
+            self._conn.commit()
+            inserted = cur.rowcount > 0
+            if inserted:
+                _log.debug("Threat assessment saved: assessment_id=%s event_id=%s", assessment_id, event_id)
+            else:
+                _log.debug("Threat assessment duplicate ignored: assessment_id=%s", assessment_id)
+            return inserted
+
+        except sqlite3.Error as exc:
+            _log.error("Failed to save threat assessment assessment_id=%s: %s", assessment_id, exc)
+            raise
+
+    # ------------------------------------------------------------------
+    # Write: threat investigations (Stage 10)
+    # ------------------------------------------------------------------
+
+    def save_investigation(self, report: dict) -> bool:
+        """
+        Insert a multi-agent threat investigation report into threat_investigations.
+
+        Args:
+            report: Structured report from ThreatInvestigationCoordinator.
+
+        Returns:
+            True if inserted, False if ignored (idempotent duplicate on investigation_id or event_id).
+        """
+        inv_id = report.get("investigation_id")
+        if not inv_id:
+            raise ValueError("Threat investigation is missing 'investigation_id'.")
+
+        event_id = report.get("event_id")
+        if not event_id:
+            raise ValueError("Threat investigation is missing 'event_id'.")
+
+        now = datetime.datetime.now().isoformat()
+        ts = report.get("timestamp") or now
+        created = report.get("created_at") or now
+
+        try:
+            cur = self._conn.execute(
+                _INSERT_INVESTIGATION,
+                (
+                    inv_id,
+                    event_id,
+                    report.get("threat_category", "Unknown"),
+                    report.get("severity", "INFORMATIONAL"),
+                    report.get("investigation_status", "OPEN"),
+                    report.get("summary", ""),
+                    json.dumps(report.get("findings_by_agent", {}), ensure_ascii=False),
+                    json.dumps(report.get("supporting_evidence", {}), ensure_ascii=False),
+                    json.dumps(report.get("conflicting_signals", []), ensure_ascii=False),
+                    json.dumps(report.get("reasoning", []), ensure_ascii=False),
+                    json.dumps(report.get("limitations", []), ensure_ascii=False),
+                    json.dumps(report.get("recommended_next_steps", []), ensure_ascii=False),
+                    ts,
+                    created,
+                ),
+            )
+            self._conn.commit()
+            inserted = cur.rowcount > 0
+            if inserted:
+                _log.debug("Threat investigation saved: inv_id=%s event_id=%s", inv_id, event_id)
+            else:
+                _log.debug("Threat investigation duplicate ignored: inv_id=%s", inv_id)
+            return inserted
+
+        except sqlite3.Error as exc:
+            _log.error("Failed to save threat investigation inv_id=%s: %s", inv_id, exc)
+            raise
+
+    # ------------------------------------------------------------------
+    # Write: threat intelligence cache (Stage 11)
+    # ------------------------------------------------------------------
+
+    def save_intel_cache(self, entry: dict) -> bool:
+        """
+        Insert or update a threat intelligence lookup cache entry.
+
+        Args:
+            entry: Dictionary containing indicator_type, indicator_value,
+                   provider, verdict, reputation_score, raw_response,
+                   evidence_links, last_checked, expires_at, is_mock.
+
+        Returns:
+            True if inserted or replaced, False otherwise.
+        """
+        ind_type = entry.get("indicator_type")
+        ind_val = entry.get("indicator_value")
+        provider = entry.get("provider")
+
+        if not ind_type or not ind_val or not provider:
+            raise ValueError("Intel cache entry requires 'indicator_type', 'indicator_value', and 'provider'.")
+
+        verdict = entry.get("verdict", "UNKNOWN/UNAVAILABLE")
+        score = entry.get("reputation_score")
+        if score is not None:
+            try:
+                score = float(score)
+            except (ValueError, TypeError):
+                score = None
+
+        raw_resp = entry.get("raw_response_json") or entry.get("raw_response", {})
+        if not isinstance(raw_resp, str):
+            raw_resp = json.dumps(raw_resp, ensure_ascii=False)
+
+        links = entry.get("evidence_links_json") or entry.get("evidence_links", [])
+        if not isinstance(links, str):
+            links = json.dumps(links, ensure_ascii=False)
+
+        now = datetime.datetime.now().isoformat()
+        last_checked = entry.get("last_checked") or now
+        expires_at = entry.get("expires_at") or now
+        is_mock = 1 if entry.get("is_mock") else 0
+
+        try:
+            cur = self._conn.execute(
+                _INSERT_THREAT_INTEL,
+                (
+                    str(ind_type).strip().lower(),
+                    str(ind_val).strip(),
+                    str(provider).strip(),
+                    str(verdict).strip(),
+                    score,
+                    raw_resp,
+                    links,
+                    last_checked,
+                    expires_at,
+                    is_mock,
+                ),
+            )
+            self._conn.commit()
+            return cur.rowcount > 0
+        except sqlite3.Error as exc:
+            _log.error("Failed to save threat intel cache for %s:%s (%s): %s", ind_type, ind_val, provider, exc)
+            raise
+
+    # ------------------------------------------------------------------
     # Utilities
     # ------------------------------------------------------------------
 
@@ -418,4 +712,22 @@ class AlertStore:
         """Return current number of rows in the incidents table."""
         row = self._conn.execute("SELECT COUNT(*) FROM incidents;").fetchone()
         return row[0] if row else 0
+
+    def assessment_count(self) -> int:
+        """Return current number of rows in the threat_assessments table."""
+        row = self._conn.execute("SELECT COUNT(*) FROM threat_assessments;").fetchone()
+        return row[0] if row else 0
+
+    def investigation_count(self) -> int:
+        """Return current number of rows in the threat_investigations table."""
+        row = self._conn.execute("SELECT COUNT(*) FROM threat_investigations;").fetchone()
+        return row[0] if row else 0
+
+    def intel_cache_count(self) -> int:
+        """Return current number of rows in the threat_intel_cache table."""
+        row = self._conn.execute("SELECT COUNT(*) FROM threat_intel_cache;").fetchone()
+        return row[0] if row else 0
+
+
+
 

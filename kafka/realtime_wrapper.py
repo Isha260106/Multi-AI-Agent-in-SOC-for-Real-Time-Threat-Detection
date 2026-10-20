@@ -17,7 +17,7 @@ def print_demonstration_summary(start_event_id, start_time):
     runtime = time.time() - start_time
     
     print("\n" + "=" * 60)
-    print("STAGE 8B — SOC DEMONSTRATION SUMMARY")
+    print("STAGE 8B -- SOC DEMONSTRATION SUMMARY")
     print("=" * 60 + "\n")
     
     if not DB_PATH.exists():

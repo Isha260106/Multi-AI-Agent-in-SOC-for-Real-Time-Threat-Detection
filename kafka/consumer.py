@@ -134,6 +134,21 @@ try:
 except ImportError:
     _CORRELATION_AVAILABLE = False
 
+# Stage 9A: Unified Threat Assessment Engine
+try:
+    from agents.threat_assessment.agent import ThreatAssessmentEngine as _ThreatAssessmentEngine
+    _THREAT_ASSESSMENT_AVAILABLE = True
+except ImportError:
+    _THREAT_ASSESSMENT_AVAILABLE = False
+
+# Stage 10: Multi-Agent Threat Investigation Coordinator
+try:
+    from agents.threat_investigation.coordinator import ThreatInvestigationCoordinator as _InvestigationCoordinator
+    _INVESTIGATION_AVAILABLE = True
+except ImportError:
+    _INVESTIGATION_AVAILABLE = False
+
+
 # ---------------------------------------------------------------------------
 # Logging -- file only so terminal stays clean during demos
 # ---------------------------------------------------------------------------
@@ -422,6 +437,28 @@ def consume_events(
         except Exception as _cae:
             _print(f"  {YELLOW}[Stage 7] Correlation agent init failed: {str(_cae)[:80]}{RESET}")
 
+    # ------------------------------------------------------------------ #
+    # Initialise Threat Assessment Engine (Stage 9A)                       #
+    # ------------------------------------------------------------------ #
+    _threat_engine = None
+    if _THREAT_ASSESSMENT_AVAILABLE:
+        try:
+            _threat_engine = _ThreatAssessmentEngine()
+            _print(f"  {GREEN}Unified Threat Assessment Engine ready.{RESET}")
+        except Exception as _tae:
+            _print(f"  {YELLOW}[Stage 9A] Threat Assessment init failed: {str(_tae)[:80]}{RESET}")
+
+    # ------------------------------------------------------------------ #
+    # Initialise Threat Investigation Coordinator (Stage 10)               #
+    # ------------------------------------------------------------------ #
+    _investigation_coord = None
+    if _INVESTIGATION_AVAILABLE:
+        try:
+            _investigation_coord = _InvestigationCoordinator()
+            _print(f"  {GREEN}Threat Investigation Coordinator ready.{RESET}")
+        except Exception as _ice:
+            _print(f"  {YELLOW}[Stage 10] Threat Investigation init failed: {str(_ice)[:80]}{RESET}")
+
     from agents.anomaly_detection.config import ANOMALY_ALERT_FILE as _ANOMALY_ALERT_FILE
     _print(f"  {BOLD}Waiting for events -- press Ctrl+C to stop{RESET}")
     _print("  " + "-" * 56)
@@ -539,7 +576,45 @@ def consume_events(
                     except Exception as _cae:
                         _log.error("[Stage 7] Correlation failed for event_id=%s: %s", eid, _cae)
 
-                # Stage 5, 6 & 7: persist event + alerts + incident to SQLite
+                # Stage 9A: Run Unified Threat Assessment Engine (Zero model re-runs)
+                assessment = None
+                if _threat_engine is not None:
+                    try:
+                        assessment = _threat_engine.assess(
+                            network_alert=alert,
+                            anomaly_alert=anomaly_alert,
+                            event_id=eid,
+                            actual_label=actual,
+                        )
+                        t_cat = assessment.get("category", "?")
+                        t_sev = assessment.get("severity", "?")
+                        t_color = RED if t_sev == "HIGH" else (YELLOW if t_sev == "MEDIUM" else GREEN)
+                        _print(f"  {'Threat POST':12}: {t_color}{t_cat}{RESET}  "
+                               f"sev={t_color}{t_sev}{RESET}")
+                    except Exception as _tae:
+                        _log.error("[Stage 9A] Threat assessment failed for event_id=%s: %s", eid, _tae)
+
+                # Stage 10: Multi-Agent Threat Investigation (Triggered on Suspicious/Threat events)
+                investigation = None
+                if _investigation_coord is not None and assessment is not None:
+                    try:
+                        investigation = _investigation_coord.investigate(
+                            event_id=eid,
+                            event=event,
+                            network_alert=alert,
+                            anomaly_alert=anomaly_alert,
+                            incident=incident,
+                            threat_assessment=assessment,
+                        )
+                        if investigation:
+                            inv_stat = investigation.get("investigation_status", "OPEN")
+                            inv_color = RED if "TIER2" in inv_stat or "COMPLETED" in inv_stat else YELLOW
+                            _print(f"  {'Investigation':12}: {inv_color}{inv_stat}{RESET}  "
+                                   f"({investigation.get('investigation_id', '')[:8]}...)")
+                    except Exception as _inv_err:
+                        _log.error("[Stage 10] Investigation failed for event_id=%s: %s", eid, _inv_err)
+
+                # Stage 5, 6, 7, 9A & 10: persist event + alerts + incident + assessment + investigation to SQLite
                 if _STORAGE_AVAILABLE:
                     try:
                         with _AlertStore() as _store:
@@ -549,6 +624,10 @@ def consume_events(
                                 _store.save_alert(anomaly_alert) # Anomaly alert
                             if incident:
                                 _store.save_incident(incident) # Correlated incident
+                            if assessment:
+                                _store.save_assessment(assessment) # Unified Threat Assessment
+                            if investigation:
+                                _store.save_investigation(investigation) # Multi-Agent Threat Investigation Report
                         _log.debug("Saved to soc.db: event_id=%s", eid)
                     except Exception as _db_exc:
                         _log.error(

@@ -26,6 +26,7 @@ SUPPORTED QUERIES
   search_alerts(keyword, field)         -- SQL LIKE pattern on a specified column
 """
 
+import datetime
 import json
 import logging
 import pathlib
@@ -207,6 +208,22 @@ class AlertQueryStore:
         ).fetchall()
         _log.debug("get_alert_by_event_id(%r) -> %d rows", event_id, len(rows))
         return [_row_to_dict(r) for r in rows]
+
+    def get_event_by_id(self, event_id: str) -> dict | None:
+        """Return single raw event record by event_id."""
+        row = self._conn.execute(
+            "SELECT * FROM events WHERE event_id = ? LIMIT 1;",
+            (event_id.strip(),),
+        ).fetchone()
+        if not row:
+            return None
+        d = dict(row)
+        if "features_json" in d and d["features_json"]:
+            try:
+                d["features"] = json.loads(d["features_json"])
+            except Exception:
+                d["features"] = {}
+        return d
 
     # ------------------------------------------------------------------
     # Aggregation / statistics
@@ -415,4 +432,352 @@ class IncidentQueryStore(AlertQueryStore):
             "earliest_incident": earliest,
             "latest_incident": latest,
         }
+
+
+# ---------------------------------------------------------------------------
+# ThreatAssessmentQueryStore (Stage 9A)
+# ---------------------------------------------------------------------------
+
+_ASSESSMENT_SEARCHABLE_FIELDS = {
+    "assessment_id", "event_id", "category", "severity",
+    "network_prediction", "anomaly_prediction", "explanation", "actual_label",
+}
+
+
+def _assessment_row_to_dict(row: sqlite3.Row) -> dict:
+    """Convert a threat assessment sqlite3.Row to a plain Python dict."""
+    d = dict(row)
+    # Reconstruct nested predictions and scores dictionaries for API consistency
+    d["predictions"] = {
+        "network": d.get("network_prediction"),
+        "anomaly": d.get("anomaly_prediction"),
+    }
+    d["scores"] = {
+        "network_confidence": d.get("network_confidence"),
+        "anomaly_score": d.get("anomaly_score"),
+    }
+    return d
+
+
+class ThreatAssessmentQueryStore(AlertQueryStore):
+    """
+    Read-only query interface for the soc.db threat_assessments table.
+    Inherits connection logic from AlertQueryStore.
+    """
+
+    def get_recent_assessments(self, n: int = 20) -> list[dict]:
+        """Return the N most recent threat assessments (by timestamp descending)."""
+        rows = self._conn.execute(
+            "SELECT * FROM threat_assessments ORDER BY timestamp DESC LIMIT ?;", (n,)
+        ).fetchall()
+        return [_assessment_row_to_dict(r) for r in rows]
+
+    def get_assessments_by_category(self, category: str) -> list[dict]:
+        """Return threat assessments matching the given category."""
+        rows = self._conn.execute(
+            "SELECT * FROM threat_assessments WHERE LOWER(category) = LOWER(?) ORDER BY timestamp DESC;",
+            (category.strip(),),
+        ).fetchall()
+        return [_assessment_row_to_dict(r) for r in rows]
+
+    def get_assessments_by_severity(self, severity: str) -> list[dict]:
+        """Return threat assessments matching the given severity."""
+        rows = self._conn.execute(
+            "SELECT * FROM threat_assessments WHERE UPPER(severity) = UPPER(?) ORDER BY timestamp DESC;",
+            (severity.strip(),),
+        ).fetchall()
+        return [_assessment_row_to_dict(r) for r in rows]
+
+    def get_assessments_by_event_id(self, event_id: str) -> list[dict]:
+        """Return threat assessments linked to a specific event UUID."""
+        rows = self._conn.execute(
+            "SELECT * FROM threat_assessments WHERE event_id = ? ORDER BY timestamp ASC;",
+            (event_id.strip(),),
+        ).fetchall()
+        return [_assessment_row_to_dict(r) for r in rows]
+
+    def get_assessment_by_id(self, assessment_id: str) -> dict | None:
+        """Return single threat assessment by its assessment_id."""
+        row = self._conn.execute(
+            "SELECT * FROM threat_assessments WHERE assessment_id = ?;",
+            (assessment_id.strip(),),
+        ).fetchone()
+        return _assessment_row_to_dict(row) if row else None
+
+    def search_assessments(self, keyword: str, field: str = "category") -> list[dict]:
+        """Search threat assessments using SQL LIKE on an allowed field."""
+        if field not in _ASSESSMENT_SEARCHABLE_FIELDS:
+            raise ValueError(
+                f"Field '{field}' is not searchable. Allowed: {sorted(_ASSESSMENT_SEARCHABLE_FIELDS)}"
+            )
+        pattern = keyword if "%" in keyword else f"%{keyword}%"
+        rows = self._conn.execute(
+            f"SELECT * FROM threat_assessments WHERE {field} LIKE ? ORDER BY timestamp DESC;",
+            (pattern,),
+        ).fetchall()
+        return [_assessment_row_to_dict(r) for r in rows]
+
+    def summary_stats_assessments(self) -> dict[str, Any]:
+        """Aggregate statistical overview of recorded threat assessments."""
+        total_count = self._conn.execute("SELECT COUNT(*) FROM threat_assessments;").fetchone()[0]
+
+        cat_rows = self._conn.execute(
+            "SELECT category, COUNT(*) AS cnt FROM threat_assessments GROUP BY category;"
+        ).fetchall()
+        category_counts = {r["category"]: r["cnt"] for r in cat_rows}
+
+        sev_rows = self._conn.execute(
+            "SELECT severity, COUNT(*) AS cnt FROM threat_assessments GROUP BY severity;"
+        ).fetchall()
+        severity_counts = {r["severity"]: r["cnt"] for r in sev_rows}
+
+        earliest = self._conn.execute("SELECT MIN(timestamp) FROM threat_assessments;").fetchone()[0]
+        latest = self._conn.execute("SELECT MAX(timestamp) FROM threat_assessments;").fetchone()[0]
+
+        return {
+            "total_assessments": total_count,
+            "category_counts": category_counts,
+            "severity_counts": severity_counts,
+            "earliest_assessment": earliest,
+            "latest_assessment": latest,
+        }
+
+
+# ---------------------------------------------------------------------------
+# ThreatInvestigationQueryStore (Stage 10)
+# ---------------------------------------------------------------------------
+
+_INVESTIGATION_SEARCHABLE_FIELDS = {
+    "investigation_id", "event_id", "threat_category",
+    "severity", "investigation_status", "summary",
+}
+
+
+def _investigation_row_to_dict(row: sqlite3.Row) -> dict:
+    """Convert an investigation sqlite3.Row to a plain Python dict."""
+    d = dict(row)
+    for col in (
+        "findings_by_agent_json", "supporting_evidence_json",
+        "conflicting_signals_json", "reasoning_json",
+        "limitations_json", "recommended_next_steps_json"
+    ):
+        clean_key = col.replace("_json", "")
+        if col in d and d[col] is not None:
+            try:
+                d[clean_key] = json.loads(d[col])
+            except (json.JSONDecodeError, TypeError):
+                d[clean_key] = [] if "list" in clean_key or "findings" in clean_key else {}
+        else:
+            d[clean_key] = [] if "signals" in clean_key or "reasoning" in clean_key or "steps" in clean_key else {}
+    return d
+
+
+class ThreatInvestigationQueryStore(AlertQueryStore):
+    """
+    Read-only query interface for the soc.db threat_investigations table.
+    Inherits connection lifecycle from AlertQueryStore.
+    """
+
+    def get_recent_investigations(self, n: int = 20) -> list[dict]:
+        """Return the N most recent investigation reports (by timestamp descending)."""
+        rows = self._conn.execute(
+            "SELECT * FROM threat_investigations ORDER BY timestamp DESC LIMIT ?;", (n,)
+        ).fetchall()
+        return [_investigation_row_to_dict(r) for r in rows]
+
+    def get_investigation_by_id(self, investigation_id: str) -> dict | None:
+        """Return single investigation report by its UUID."""
+        row = self._conn.execute(
+            "SELECT * FROM threat_investigations WHERE investigation_id = ?;",
+            (investigation_id.strip(),),
+        ).fetchone()
+        return _investigation_row_to_dict(row) if row else None
+
+    def get_investigation_by_event_id(self, event_id: str) -> dict | None:
+        """Return investigation report triggered by a specific event UUID."""
+        row = self._conn.execute(
+            "SELECT * FROM threat_investigations WHERE event_id = ? ORDER BY timestamp DESC LIMIT 1;",
+            (event_id.strip(),),
+        ).fetchone()
+        return _investigation_row_to_dict(row) if row else None
+
+    def get_investigations_by_status(self, status: str) -> list[dict]:
+        """Return investigations filtered by status."""
+        rows = self._conn.execute(
+            "SELECT * FROM threat_investigations WHERE UPPER(investigation_status) = UPPER(?) ORDER BY timestamp DESC;",
+            (status.strip(),),
+        ).fetchall()
+        return [_investigation_row_to_dict(r) for r in rows]
+
+    def get_investigations_by_category(self, category: str) -> list[dict]:
+        """Return investigations filtered by threat category."""
+        rows = self._conn.execute(
+            "SELECT * FROM threat_investigations WHERE LOWER(threat_category) = LOWER(?) ORDER BY timestamp DESC;",
+            (category.strip(),),
+        ).fetchall()
+        return [_investigation_row_to_dict(r) for r in rows]
+
+    def search_investigations(self, keyword: str, field: str = "summary") -> list[dict]:
+        """Search investigations using SQL LIKE on an allowed column."""
+        if field not in _INVESTIGATION_SEARCHABLE_FIELDS:
+            raise ValueError(
+                f"Field '{field}' is not searchable. Allowed: {sorted(_INVESTIGATION_SEARCHABLE_FIELDS)}"
+            )
+        pattern = keyword if "%" in keyword else f"%{keyword}%"
+        rows = self._conn.execute(
+            f"SELECT * FROM threat_investigations WHERE {field} LIKE ? ORDER BY timestamp DESC;",
+            (pattern,),
+        ).fetchall()
+        return [_investigation_row_to_dict(r) for r in rows]
+
+    def summary_stats_investigations(self) -> dict[str, Any]:
+        """Aggregate statistical overview of completed investigations."""
+        total_count = self._conn.execute("SELECT COUNT(*) FROM threat_investigations;").fetchone()[0]
+
+        stat_rows = self._conn.execute(
+            "SELECT investigation_status, COUNT(*) AS cnt FROM threat_investigations GROUP BY investigation_status;"
+        ).fetchall()
+        status_counts = {r["investigation_status"]: r["cnt"] for r in stat_rows}
+
+        cat_rows = self._conn.execute(
+            "SELECT threat_category, COUNT(*) AS cnt FROM threat_investigations GROUP BY threat_category;"
+        ).fetchall()
+        category_counts = {r["threat_category"]: r["cnt"] for r in cat_rows}
+
+        sev_rows = self._conn.execute(
+            "SELECT severity, COUNT(*) AS cnt FROM threat_investigations GROUP BY severity;"
+        ).fetchall()
+        severity_counts = {r["severity"]: r["cnt"] for r in sev_rows}
+
+        earliest = self._conn.execute("SELECT MIN(timestamp) FROM threat_investigations;").fetchone()[0]
+        latest = self._conn.execute("SELECT MAX(timestamp) FROM threat_investigations;").fetchone()[0]
+
+        return {
+            "total_investigations": total_count,
+            "status_counts": status_counts,
+            "category_counts": category_counts,
+            "severity_counts": severity_counts,
+            "earliest_investigation": earliest,
+            "latest_investigation": latest,
+        }
+
+
+# ---------------------------------------------------------------------------
+# ThreatIntelQueryStore (Stage 11)
+# ---------------------------------------------------------------------------
+
+def _intel_row_to_dict(row: sqlite3.Row) -> dict:
+    """Convert a threat_intel_cache sqlite3.Row to a clean Python dict."""
+    d = dict(row)
+    if "raw_response_json" in d and d["raw_response_json"] is not None:
+        try:
+            d["raw_response"] = json.loads(d["raw_response_json"])
+        except Exception:
+            d["raw_response"] = {}
+    else:
+        d["raw_response"] = {}
+
+    if "evidence_links_json" in d and d["evidence_links_json"] is not None:
+        try:
+            d["evidence_links"] = json.loads(d["evidence_links_json"])
+        except Exception:
+            d["evidence_links"] = []
+    else:
+        d["evidence_links"] = []
+
+    d["is_mock"] = bool(d.get("is_mock", 0))
+    expires_at = d.get("expires_at", "")
+    now_iso = datetime.datetime.now().isoformat()
+    d["is_expired"] = bool(expires_at and str(expires_at) < now_iso)
+    return d
+
+
+class ThreatIntelQueryStore(AlertQueryStore):
+    """
+    Read-only query interface for threat_intel_cache in soc.db.
+    Inherits connection lifecycle from AlertQueryStore.
+    """
+
+    def get_cached_intel(
+        self,
+        indicator_type: str,
+        indicator_value: str,
+        provider: str | None = None,
+        valid_only: bool = False,
+    ) -> dict | None:
+        """
+        Lookup cached intelligence entry for an indicator.
+
+        Args:
+            indicator_type: 'ip', 'port', etc.
+            indicator_value: The indicator value string.
+            provider: Optional provider name filter.
+            valid_only: If True, returns None if entry is expired.
+        """
+        query = "SELECT * FROM threat_intel_cache WHERE LOWER(indicator_type) = LOWER(?) AND indicator_value = ?"
+        params: list[Any] = [indicator_type.strip(), str(indicator_value).strip()]
+        if provider:
+            query += " AND LOWER(provider) = LOWER(?)"
+            params.append(provider.strip())
+        query += " ORDER BY last_checked DESC LIMIT 1;"
+
+        row = self._conn.execute(query, tuple(params)).fetchone()
+        if not row:
+            return None
+        res = _intel_row_to_dict(row)
+        if valid_only and res["is_expired"]:
+            return None
+        return res
+
+    def get_recent_intel(self, n: int = 20) -> list[dict]:
+        """Return the N most recently checked threat intelligence records."""
+        rows = self._conn.execute(
+            "SELECT * FROM threat_intel_cache ORDER BY last_checked DESC LIMIT ?;", (n,)
+        ).fetchall()
+        return [_intel_row_to_dict(r) for r in rows]
+
+    def get_intel_by_verdict(self, verdict: str) -> list[dict]:
+        """Return cached intel records matching a specific verdict."""
+        rows = self._conn.execute(
+            "SELECT * FROM threat_intel_cache WHERE UPPER(verdict) = UPPER(?) ORDER BY last_checked DESC;",
+            (verdict.strip(),),
+        ).fetchall()
+        return [_intel_row_to_dict(r) for r in rows]
+
+    def get_intel_by_provider(self, provider: str) -> list[dict]:
+        """Return cached intel records from a specific provider."""
+        rows = self._conn.execute(
+            "SELECT * FROM threat_intel_cache WHERE LOWER(provider) = LOWER(?) ORDER BY last_checked DESC;",
+            (provider.strip(),),
+        ).fetchall()
+        return [_intel_row_to_dict(r) for r in rows]
+
+    def summary_stats_intel(self) -> dict[str, Any]:
+        """Aggregate statistical summary of threat intelligence lookups."""
+        total = self._conn.execute("SELECT COUNT(*) FROM threat_intel_cache;").fetchone()[0]
+        verdict_rows = self._conn.execute(
+            "SELECT verdict, COUNT(*) as cnt FROM threat_intel_cache GROUP BY verdict;"
+        ).fetchall()
+        provider_rows = self._conn.execute(
+            "SELECT provider, COUNT(*) as cnt FROM threat_intel_cache GROUP BY provider;"
+        ).fetchall()
+        mock_count = self._conn.execute(
+            "SELECT COUNT(*) FROM threat_intel_cache WHERE is_mock = 1;"
+        ).fetchone()[0]
+        now_iso = datetime.datetime.now().isoformat()
+        expired_count = self._conn.execute(
+            "SELECT COUNT(*) FROM threat_intel_cache WHERE expires_at < ?;", (now_iso,)
+        ).fetchone()[0]
+
+        return {
+            "total_cached": total,
+            "mock_count": mock_count,
+            "real_count": total - mock_count,
+            "expired_count": expired_count,
+            "verdicts": {r["verdict"]: r["cnt"] for r in verdict_rows},
+            "providers": {r["provider"]: r["cnt"] for r in provider_rows},
+        }
+
+
+
 

@@ -74,6 +74,7 @@ def run_tests():
         daemon=True
     )
     consumer_thread.start()
+    time.sleep(1.0)  # Allow consumer to load models and bind to queue
 
     # Re-run a controlled injection bounded heavily towards interval checking
     start_time = time.perf_counter()

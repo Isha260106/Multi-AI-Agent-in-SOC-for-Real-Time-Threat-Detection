@@ -159,7 +159,16 @@ def format_output(event_id, nd_alert, ad_alert, alerts_generated, incident, time
     lines.append("ANOMALY DETECTION")
     if ad_alert:
         lines.append(f"Prediction     : {ad_alert['prediction'].upper() if ad_alert['prediction'] else 'UNKNOWN'}")
-        score = ad_alert['confidence'] # Score is stored in confidence column
+        # Anomaly score might be stored in 'confidence' column, or inside network_context_json
+        score = ad_alert['confidence']
+        if score is None and ad_alert['network_context_json']:
+            try:
+                import json
+                ctx = json.loads(ad_alert['network_context_json'])
+                if isinstance(ctx, dict) and 'anomaly_score' in ctx:
+                    score = ctx['anomaly_score']
+            except Exception:
+                pass
         lines.append(f"Anomaly Score  : {score:.6f}" if score is not None else "Anomaly Score  : N/A")
     else:
         lines.append("Prediction     : N/A")
@@ -225,9 +234,9 @@ def run_monitor(args):
         print(f"[FATAL] Database not found at: {args.db_path}")
         sys.exit(1)
 
-    print("╔════════════════════════════════════════════════════════════╗")
-    print("║              REAL-TIME AI SECURITY OPERATIONS CENTER       ║")
-    print("╚════════════════════════════════════════════════════════════╝\n")
+    print("+" + "=" * 60 + "+")
+    print("|" + "REAL-TIME AI SECURITY OPERATIONS CENTER".center(60) + "|")
+    print("+" + "=" * 60 + "+\n")
 
     stats = LiveStats()
 

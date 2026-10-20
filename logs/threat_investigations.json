@@ -1,0 +1,2520 @@
+[
+  {
+    "investigation_id": "a5908948-799b-5baf-aa1a-749f0beb70fc",
+    "event_id": "7f573f50-5972-4e6f-98ef-eb3c41723125",
+    "threat_category": "Suspicious Anomaly",
+    "severity": "MEDIUM",
+    "investigation_status": "REQUIRES_TIER2",
+    "summary": "INVESTIGATION FLAGGED STATISTICAL OUTLIER: Flow exhibited unusual volume or timing distribution, but supervised detection classified signature as Benign. Anomaly alone does NOT confirm malicious intent.",
+    "findings_by_agent": {
+      "network_evidence": [
+        "Destination port is 0, commonly observed in ICMP or non-standard protocol encapsulations.",
+        "Flow velocity is moderate to low: 0.0484 pkts/sec.",
+        "Unidirectional flow detected: forward packets transmitted with zero backward responses."
+      ],
+      "anomaly_explanation": [
+        "Statistical deviation confirmed: flow characteristics diverge from benign training baseline.",
+        "Unusually long flow duration: 62.0 seconds, contributing to outlier profile."
+      ],
+      "alert_correlation": [
+        "No multi-agent incident was generated (single agent triggered or below correlation threshold)."
+      ]
+    },
+    "supporting_evidence": {
+      "network_facts": {
+        "dst_port": 0.0,
+        "protocol": 0.0,
+        "flow_duration_us": 61997503.0,
+        "tot_fwd_pkts": 3.0,
+        "tot_bwd_pkts": 0.0,
+        "flow_pkts_s": 0.048389046,
+        "flow_byts_s": 0.0
+      },
+      "anomaly_facts": {
+        "anomaly_prediction": "Anomalous",
+        "raw_isolation_forest_score": null,
+        "severity": "HIGH"
+      },
+      "incident_facts": {
+        "network_prediction": "Benign",
+        "anomaly_prediction": "Anomalous",
+        "has_correlated_incident": false,
+        "threat_category": "Suspicious Anomaly",
+        "threat_severity": "MEDIUM"
+      }
+    },
+    "conflicting_signals": [
+      "Supervised model classified signature as Benign, but unsupervised model flagged flow as statistically anomalous."
+    ],
+    "reasoning": [
+      "Unanswered connections often signify probing, dropped traffic, or SYN scanning.",
+      "Supervised Random Forest classified signature as 'Benign' with confidence 100.00%.",
+      "Unsupervised model detected atypical metric distribution compared to learned normal traffic.",
+      "Critical SOC Principle: Anomaly alone does NOT confirm an attack. Likely a benign traffic spike, backup stream, or novel protocol."
+    ],
+    "limitations": [
+      "Analysis limited to 78 pre-extracted statistical flow metrics; payload inspection not available in flow records.",
+      "Isolation Forest provides unsupervised density estimation; it does not indicate malicious intent on its own."
+    ],
+    "recommended_next_steps": [
+      "Cross-reference timestamp against scheduled maintenance windows, backups, or batch syncs.",
+      "Evaluate whether destination host recently deployed new services or protocols.",
+      "Maintain telemetry surveillance on source IP without immediate blocking to prevent false positives."
+    ],
+    "timestamp": "2026-10-20T22:36:16.457150",
+    "created_at": "2026-10-20T22:36:16.457150"
+  },
+  {
+    "investigation_id": "5f0eee48-b752-57e1-a74f-10d0926173fc",
+    "event_id": "c3a84e26-bbd1-42cd-8c6c-ec4eef2d5b8d",
+    "threat_category": "Suspicious Anomaly",
+    "severity": "MEDIUM",
+    "investigation_status": "REQUIRES_TIER2",
+    "summary": "INVESTIGATION FLAGGED STATISTICAL OUTLIER: Flow exhibited unusual volume or timing distribution, but supervised detection classified signature as Benign. Anomaly alone does NOT confirm malicious intent.",
+    "findings_by_agent": {
+      "network_evidence": [
+        "Destination port is 0, commonly observed in ICMP or non-standard protocol encapsulations.",
+        "Flow velocity is moderate to low: 0.0328 pkts/sec.",
+        "Unidirectional flow detected: forward packets transmitted with zero backward responses."
+      ],
+      "anomaly_explanation": [
+        "Statistical deviation confirmed: flow characteristics diverge from benign training baseline.",
+        "Significant outlier score (-0.5108): deep isolation depth in tree forest.",
+        "Unusually long flow duration: 61.0 seconds, contributing to outlier profile."
+      ],
+      "alert_correlation": [
+        "No multi-agent incident was generated (single agent triggered or below correlation threshold)."
+      ]
+    },
+    "supporting_evidence": {
+      "network_facts": {
+        "dst_port": 0.0,
+        "protocol": 0.0,
+        "flow_duration_us": 61013174.0,
+        "tot_fwd_pkts": 2.0,
+        "tot_bwd_pkts": 0.0,
+        "flow_pkts_s": 0.032779806,
+        "flow_byts_s": 0.0
+      },
+      "anomaly_facts": {
+        "anomaly_prediction": "Anomalous",
+        "raw_isolation_forest_score": -0.510768,
+        "severity": "HIGH"
+      },
+      "incident_facts": {
+        "network_prediction": "Benign",
+        "anomaly_prediction": "Anomalous",
+        "has_correlated_incident": false,
+        "threat_category": "Suspicious Anomaly",
+        "threat_severity": "MEDIUM"
+      }
+    },
+    "conflicting_signals": [
+      "Supervised model classified signature as Benign, but unsupervised model flagged flow as statistically anomalous."
+    ],
+    "reasoning": [
+      "Unanswered connections often signify probing, dropped traffic, or SYN scanning.",
+      "Supervised Random Forest classified signature as 'Benign' with confidence 100.00%.",
+      "Negative isolation scores below -0.30 reflect rare multi-dimensional feature combinations.",
+      "Unsupervised model detected atypical metric distribution compared to learned normal traffic.",
+      "Critical SOC Principle: Anomaly alone does NOT confirm an attack. Likely a benign traffic spike, backup stream, or novel protocol."
+    ],
+    "limitations": [
+      "Analysis limited to 78 pre-extracted statistical flow metrics; payload inspection not available in flow records.",
+      "Isolation Forest provides unsupervised density estimation; it does not indicate malicious intent on its own."
+    ],
+    "recommended_next_steps": [
+      "Cross-reference timestamp against scheduled maintenance windows, backups, or batch syncs.",
+      "Evaluate whether destination host recently deployed new services or protocols.",
+      "Maintain telemetry surveillance on source IP without immediate blocking to prevent false positives."
+    ],
+    "timestamp": "2026-10-20T22:47:44.608308",
+    "created_at": "2026-10-20T22:47:44.608308"
+  },
+  {
+    "investigation_id": "e35d8896-66c8-5e2c-b3ed-09959d2e2cb9",
+    "event_id": "e1b2d68e-ad83-4037-a09f-c353dd8b9dc0",
+    "threat_category": "Suspicious Anomaly",
+    "severity": "MEDIUM",
+    "investigation_status": "REQUIRES_TIER2",
+    "summary": "INVESTIGATION FLAGGED STATISTICAL OUTLIER: Flow exhibited unusual volume or timing distribution, but supervised detection classified signature as Benign. Anomaly alone does NOT confirm malicious intent.",
+    "findings_by_agent": {
+      "network_evidence": [
+        "Flow velocity is moderate to low: 0.0985 pkts/sec.",
+        "Unidirectional flow detected: forward packets transmitted with zero backward responses."
+      ],
+      "anomaly_explanation": [
+        "Statistical deviation confirmed: flow characteristics diverge from benign training baseline.",
+        "Significant outlier score (-0.6005): deep isolation depth in tree forest.",
+        "Unusually long flow duration: 91.4 seconds, contributing to outlier profile."
+      ],
+      "alert_correlation": [
+        "No multi-agent incident was generated (single agent triggered or below correlation threshold)."
+      ]
+    },
+    "supporting_evidence": {
+      "network_facts": {
+        "dst_port": 67.0,
+        "protocol": 17.0,
+        "flow_duration_us": 91370920.0,
+        "tot_fwd_pkts": 9.0,
+        "tot_bwd_pkts": 0.0,
+        "flow_pkts_s": 0.09849961,
+        "flow_byts_s": 29.54988305
+      },
+      "anomaly_facts": {
+        "anomaly_prediction": "Anomalous",
+        "raw_isolation_forest_score": -0.60052,
+        "severity": "HIGH"
+      },
+      "incident_facts": {
+        "network_prediction": "Benign",
+        "anomaly_prediction": "Anomalous",
+        "has_correlated_incident": false,
+        "threat_category": "Suspicious Anomaly",
+        "threat_severity": "MEDIUM"
+      }
+    },
+    "conflicting_signals": [
+      "Supervised model classified signature as Benign, but unsupervised model flagged flow as statistically anomalous."
+    ],
+    "reasoning": [
+      "Unanswered connections often signify probing, dropped traffic, or SYN scanning.",
+      "Supervised Random Forest classified signature as 'Benign' with confidence 100.00%.",
+      "Negative isolation scores below -0.30 reflect rare multi-dimensional feature combinations.",
+      "Unsupervised model detected atypical metric distribution compared to learned normal traffic.",
+      "Critical SOC Principle: Anomaly alone does NOT confirm an attack. Likely a benign traffic spike, backup stream, or novel protocol."
+    ],
+    "limitations": [
+      "Analysis limited to 78 pre-extracted statistical flow metrics; payload inspection not available in flow records.",
+      "Isolation Forest provides unsupervised density estimation; it does not indicate malicious intent on its own."
+    ],
+    "recommended_next_steps": [
+      "Cross-reference timestamp against scheduled maintenance windows, backups, or batch syncs.",
+      "Evaluate whether destination host recently deployed new services or protocols.",
+      "Maintain telemetry surveillance on source IP without immediate blocking to prevent false positives."
+    ],
+    "timestamp": "2026-10-20T22:47:44.935671",
+    "created_at": "2026-10-20T22:47:44.935671"
+  },
+  {
+    "investigation_id": "fc7897be-615a-5e85-95ac-3c892bb82168",
+    "event_id": "9b15256e-5f48-43c0-af12-3622d41c60e3",
+    "threat_category": "Confirmed Attack",
+    "severity": "HIGH",
+    "investigation_status": "COMPLETED",
+    "summary": "INVESTIGATION VERIFIED ACTIVE THREAT: Dual confirmation across supervised attack signature and statistical baseline outlier detection. Supporting evidence indicates anomalous flow metrics.",
+    "findings_by_agent": {
+      "network_evidence": [
+        "Traffic targeted dynamic/ephemeral high port (Dst Port 49437.0).",
+        "High flow velocity observed: 76923.08 pkts/sec (potential flood or scan burst).",
+        "Unidirectional flow detected: forward packets transmitted with zero backward responses."
+      ],
+      "anomaly_explanation": [
+        "Statistical deviation confirmed: flow characteristics diverge from benign training baseline.",
+        "Significant outlier score (-0.3456): deep isolation depth in tree forest."
+      ],
+      "alert_correlation": [
+        "No multi-agent incident was generated (single agent triggered or below correlation threshold).",
+        "Dual Agreement: Supervised signature match and statistical outlier detection align on threat."
+      ]
+    },
+    "supporting_evidence": {
+      "network_facts": {
+        "dst_port": 49437.0,
+        "protocol": 6.0,
+        "flow_duration_us": 26.0,
+        "tot_fwd_pkts": 2.0,
+        "tot_bwd_pkts": 0.0,
+        "flow_pkts_s": 76923.07692,
+        "flow_byts_s": 0.0
+      },
+      "anomaly_facts": {
+        "anomaly_prediction": "Anomalous",
+        "raw_isolation_forest_score": -0.345649,
+        "severity": "HIGH"
+      },
+      "incident_facts": {
+        "network_prediction": "Infilteration",
+        "anomaly_prediction": "Anomalous",
+        "has_correlated_incident": false,
+        "threat_category": "Confirmed Attack",
+        "threat_severity": "HIGH"
+      }
+    },
+    "conflicting_signals": [],
+    "reasoning": [
+      "High packet rate exceeds standard baseline interactive sessions.",
+      "Unanswered connections often signify probing, dropped traffic, or SYN scanning.",
+      "Supervised Random Forest classified signature as 'Infilteration' with confidence 88.00%.",
+      "Negative isolation scores below -0.30 reflect rare multi-dimensional feature combinations.",
+      "Unsupervised model detected atypical metric distribution compared to learned normal traffic.",
+      "High confidence in malicious activity; no conflicting signals detected."
+    ],
+    "limitations": [
+      "Analysis limited to 78 pre-extracted statistical flow metrics; payload inspection not available in flow records.",
+      "Isolation Forest provides unsupervised density estimation; it does not indicate malicious intent on its own."
+    ],
+    "recommended_next_steps": [
+      "Isolate affected source host endpoint or block destination IP at perimeter firewall.",
+      "Collect endpoint host artifact dumps and volatile memory for process tree analysis.",
+      "Initiate SOC incident response runbook for confirmed infiltration/intrusion."
+    ],
+    "timestamp": "2026-10-20T22:47:45.313110",
+    "created_at": "2026-10-20T22:47:45.313110"
+  },
+  {
+    "investigation_id": "0cac0e61-832a-5785-b88f-e219e97da4af",
+    "event_id": "c4dcfb7c-7a76-4152-88fa-27a0968a47f9",
+    "threat_category": "Suspicious Anomaly",
+    "severity": "MEDIUM",
+    "investigation_status": "REQUIRES_TIER2",
+    "summary": "INVESTIGATION FLAGGED STATISTICAL OUTLIER: Flow exhibited unusual volume or timing distribution, but supervised detection classified signature as Benign. Anomaly alone does NOT confirm malicious intent.",
+    "findings_by_agent": {
+      "network_evidence": [
+        "Destination port is 0, commonly observed in ICMP or non-standard protocol encapsulations.",
+        "Flow velocity is moderate to low: 0.0328 pkts/sec.",
+        "Unidirectional flow detected: forward packets transmitted with zero backward responses."
+      ],
+      "anomaly_explanation": [
+        "Statistical deviation confirmed: flow characteristics diverge from benign training baseline.",
+        "Significant outlier score (-0.5108): deep isolation depth in tree forest.",
+        "Unusually long flow duration: 61.0 seconds, contributing to outlier profile."
+      ],
+      "alert_correlation": [
+        "No multi-agent incident was generated (single agent triggered or below correlation threshold)."
+      ]
+    },
+    "supporting_evidence": {
+      "network_facts": {
+        "dst_port": 0.0,
+        "protocol": 0.0,
+        "flow_duration_us": 61013174.0,
+        "tot_fwd_pkts": 2.0,
+        "tot_bwd_pkts": 0.0,
+        "flow_pkts_s": 0.032779806,
+        "flow_byts_s": 0.0
+      },
+      "anomaly_facts": {
+        "anomaly_prediction": "Anomalous",
+        "raw_isolation_forest_score": -0.510768,
+        "severity": "HIGH"
+      },
+      "incident_facts": {
+        "network_prediction": "Benign",
+        "anomaly_prediction": "Anomalous",
+        "has_correlated_incident": false,
+        "threat_category": "Suspicious Anomaly",
+        "threat_severity": "MEDIUM"
+      }
+    },
+    "conflicting_signals": [
+      "Supervised model classified signature as Benign, but unsupervised model flagged flow as statistically anomalous."
+    ],
+    "reasoning": [
+      "Unanswered connections often signify probing, dropped traffic, or SYN scanning.",
+      "Supervised Random Forest classified signature as 'Benign' with confidence 100.00%.",
+      "Negative isolation scores below -0.30 reflect rare multi-dimensional feature combinations.",
+      "Unsupervised model detected atypical metric distribution compared to learned normal traffic.",
+      "Critical SOC Principle: Anomaly alone does NOT confirm an attack. Likely a benign traffic spike, backup stream, or novel protocol."
+    ],
+    "limitations": [
+      "Analysis limited to 78 pre-extracted statistical flow metrics; payload inspection not available in flow records.",
+      "Isolation Forest provides unsupervised density estimation; it does not indicate malicious intent on its own."
+    ],
+    "recommended_next_steps": [
+      "Cross-reference timestamp against scheduled maintenance windows, backups, or batch syncs.",
+      "Evaluate whether destination host recently deployed new services or protocols.",
+      "Maintain telemetry surveillance on source IP without immediate blocking to prevent false positives."
+    ],
+    "timestamp": "2026-10-20T22:47:50.425932",
+    "created_at": "2026-10-20T22:47:50.425932"
+  },
+  {
+    "investigation_id": "e0e96391-1cd6-5cae-a600-bd917829c46a",
+    "event_id": "4f06b2dc-29b3-41ad-a021-cce88fdc76f4",
+    "threat_category": "Suspicious Anomaly",
+    "severity": "MEDIUM",
+    "investigation_status": "REQUIRES_TIER2",
+    "summary": "INVESTIGATION FLAGGED STATISTICAL OUTLIER: Flow exhibited unusual volume or timing distribution, but supervised detection classified signature as Benign. Anomaly alone does NOT confirm malicious intent.",
+    "findings_by_agent": {
+      "network_evidence": [
+        "Flow velocity is moderate to low: 0.0985 pkts/sec.",
+        "Unidirectional flow detected: forward packets transmitted with zero backward responses."
+      ],
+      "anomaly_explanation": [
+        "Statistical deviation confirmed: flow characteristics diverge from benign training baseline.",
+        "Significant outlier score (-0.6005): deep isolation depth in tree forest.",
+        "Unusually long flow duration: 91.4 seconds, contributing to outlier profile."
+      ],
+      "alert_correlation": [
+        "No multi-agent incident was generated (single agent triggered or below correlation threshold)."
+      ]
+    },
+    "supporting_evidence": {
+      "network_facts": {
+        "dst_port": 67.0,
+        "protocol": 17.0,
+        "flow_duration_us": 91370920.0,
+        "tot_fwd_pkts": 9.0,
+        "tot_bwd_pkts": 0.0,
+        "flow_pkts_s": 0.09849961,
+        "flow_byts_s": 29.54988305
+      },
+      "anomaly_facts": {
+        "anomaly_prediction": "Anomalous",
+        "raw_isolation_forest_score": -0.60052,
+        "severity": "HIGH"
+      },
+      "incident_facts": {
+        "network_prediction": "Benign",
+        "anomaly_prediction": "Anomalous",
+        "has_correlated_incident": false,
+        "threat_category": "Suspicious Anomaly",
+        "threat_severity": "MEDIUM"
+      }
+    },
+    "conflicting_signals": [
+      "Supervised model classified signature as Benign, but unsupervised model flagged flow as statistically anomalous."
+    ],
+    "reasoning": [
+      "Unanswered connections often signify probing, dropped traffic, or SYN scanning.",
+      "Supervised Random Forest classified signature as 'Benign' with confidence 100.00%.",
+      "Negative isolation scores below -0.30 reflect rare multi-dimensional feature combinations.",
+      "Unsupervised model detected atypical metric distribution compared to learned normal traffic.",
+      "Critical SOC Principle: Anomaly alone does NOT confirm an attack. Likely a benign traffic spike, backup stream, or novel protocol."
+    ],
+    "limitations": [
+      "Analysis limited to 78 pre-extracted statistical flow metrics; payload inspection not available in flow records.",
+      "Isolation Forest provides unsupervised density estimation; it does not indicate malicious intent on its own."
+    ],
+    "recommended_next_steps": [
+      "Cross-reference timestamp against scheduled maintenance windows, backups, or batch syncs.",
+      "Evaluate whether destination host recently deployed new services or protocols.",
+      "Maintain telemetry surveillance on source IP without immediate blocking to prevent false positives."
+    ],
+    "timestamp": "2026-10-20T22:47:50.720764",
+    "created_at": "2026-10-20T22:47:50.720764"
+  },
+  {
+    "investigation_id": "6c1174a1-414c-512c-bd78-c350fcc263fe",
+    "event_id": "4108736e-c223-4d60-82a7-1b25c9bda284",
+    "threat_category": "Confirmed Attack",
+    "severity": "HIGH",
+    "investigation_status": "COMPLETED",
+    "summary": "INVESTIGATION VERIFIED ACTIVE THREAT: Dual confirmation across supervised attack signature and statistical baseline outlier detection. Supporting evidence indicates anomalous flow metrics.",
+    "findings_by_agent": {
+      "network_evidence": [
+        "Traffic targeted dynamic/ephemeral high port (Dst Port 49437.0).",
+        "High flow velocity observed: 76923.08 pkts/sec (potential flood or scan burst).",
+        "Unidirectional flow detected: forward packets transmitted with zero backward responses."
+      ],
+      "anomaly_explanation": [
+        "Statistical deviation confirmed: flow characteristics diverge from benign training baseline.",
+        "Significant outlier score (-0.3456): deep isolation depth in tree forest."
+      ],
+      "alert_correlation": [
+        "No multi-agent incident was generated (single agent triggered or below correlation threshold).",
+        "Dual Agreement: Supervised signature match and statistical outlier detection align on threat."
+      ]
+    },
+    "supporting_evidence": {
+      "network_facts": {
+        "dst_port": 49437.0,
+        "protocol": 6.0,
+        "flow_duration_us": 26.0,
+        "tot_fwd_pkts": 2.0,
+        "tot_bwd_pkts": 0.0,
+        "flow_pkts_s": 76923.07692,
+        "flow_byts_s": 0.0
+      },
+      "anomaly_facts": {
+        "anomaly_prediction": "Anomalous",
+        "raw_isolation_forest_score": -0.345649,
+        "severity": "HIGH"
+      },
+      "incident_facts": {
+        "network_prediction": "Infilteration",
+        "anomaly_prediction": "Anomalous",
+        "has_correlated_incident": false,
+        "threat_category": "Confirmed Attack",
+        "threat_severity": "HIGH"
+      }
+    },
+    "conflicting_signals": [],
+    "reasoning": [
+      "High packet rate exceeds standard baseline interactive sessions.",
+      "Unanswered connections often signify probing, dropped traffic, or SYN scanning.",
+      "Supervised Random Forest classified signature as 'Infilteration' with confidence 88.00%.",
+      "Negative isolation scores below -0.30 reflect rare multi-dimensional feature combinations.",
+      "Unsupervised model detected atypical metric distribution compared to learned normal traffic.",
+      "High confidence in malicious activity; no conflicting signals detected."
+    ],
+    "limitations": [
+      "Analysis limited to 78 pre-extracted statistical flow metrics; payload inspection not available in flow records.",
+      "Isolation Forest provides unsupervised density estimation; it does not indicate malicious intent on its own."
+    ],
+    "recommended_next_steps": [
+      "Isolate affected source host endpoint or block destination IP at perimeter firewall.",
+      "Collect endpoint host artifact dumps and volatile memory for process tree analysis.",
+      "Initiate SOC incident response runbook for confirmed infiltration/intrusion."
+    ],
+    "timestamp": "2026-10-20T22:47:51.070957",
+    "created_at": "2026-10-20T22:47:51.070957"
+  },
+  {
+    "investigation_id": "44789450-3fd2-5ad8-8639-1d8d5eefc3fc",
+    "event_id": "c6b4986e-8820-46b0-b983-6a15dc489531",
+    "threat_category": "Confirmed Attack",
+    "severity": "HIGH",
+    "investigation_status": "COMPLETED",
+    "summary": "INVESTIGATION VERIFIED ACTIVE THREAT: Dual confirmation across supervised attack signature and statistical baseline outlier detection. Supporting evidence indicates anomalous flow metrics.",
+    "findings_by_agent": {
+      "network_evidence": [
+        "Traffic targeted remote administration port (Dst Port 3389.0).",
+        "Flow velocity is moderate to low: 8.8919 pkts/sec.",
+        "Significant TCP flags present: RST=1.0."
+      ],
+      "anomaly_explanation": [
+        "Statistical deviation confirmed: flow characteristics diverge from benign training baseline.",
+        "Significant outlier score (-0.3957): deep isolation depth in tree forest."
+      ],
+      "alert_correlation": [
+        "No multi-agent incident was generated (single agent triggered or below correlation threshold).",
+        "Dual Agreement: Supervised signature match and statistical outlier detection align on threat."
+      ]
+    },
+    "supporting_evidence": {
+      "network_facts": {
+        "dst_port": 3389.0,
+        "protocol": 6.0,
+        "flow_duration_us": 1686927.0,
+        "tot_fwd_pkts": 8.0,
+        "tot_bwd_pkts": 7.0,
+        "flow_pkts_s": 8.891908186,
+        "flow_byts_s": 1615.36332,
+        "flags_observed": "RST=1.0"
+      },
+      "anomaly_facts": {
+        "anomaly_prediction": "Anomalous",
+        "raw_isolation_forest_score": -0.395717,
+        "severity": "HIGH"
+      },
+      "incident_facts": {
+        "network_prediction": "Infilteration",
+        "anomaly_prediction": "Anomalous",
+        "has_correlated_incident": false,
+        "threat_category": "Confirmed Attack",
+        "threat_severity": "HIGH"
+      }
+    },
+    "conflicting_signals": [],
+    "reasoning": [
+      "Supervised Random Forest classified signature as 'Infilteration' with confidence 86.00%.",
+      "Negative isolation scores below -0.30 reflect rare multi-dimensional feature combinations.",
+      "Unsupervised model detected atypical metric distribution compared to learned normal traffic.",
+      "High confidence in malicious activity; no conflicting signals detected."
+    ],
+    "limitations": [
+      "Analysis limited to 78 pre-extracted statistical flow metrics; payload inspection not available in flow records.",
+      "Isolation Forest provides unsupervised density estimation; it does not indicate malicious intent on its own."
+    ],
+    "recommended_next_steps": [
+      "Isolate affected source host endpoint or block destination IP at perimeter firewall.",
+      "Collect endpoint host artifact dumps and volatile memory for process tree analysis.",
+      "Initiate SOC incident response runbook for confirmed infiltration/intrusion."
+    ],
+    "timestamp": "2026-10-20T22:48:06.563967",
+    "created_at": "2026-10-20T22:48:06.563967"
+  },
+  {
+    "investigation_id": "a1acacaa-fd0a-572a-8c2a-b57fb5f036a6",
+    "event_id": "7b94debe-01d9-4abd-9d97-36abb2a44601",
+    "threat_category": "Suspicious Anomaly",
+    "severity": "MEDIUM",
+    "investigation_status": "REQUIRES_TIER2",
+    "summary": "INVESTIGATION FLAGGED STATISTICAL OUTLIER: Flow exhibited unusual volume or timing distribution, but supervised detection classified signature as Benign. Anomaly alone does NOT confirm malicious intent.",
+    "findings_by_agent": {
+      "network_evidence": [
+        "Traffic targeted remote administration port (Dst Port 3389.0).",
+        "Flow velocity is moderate to low: 5.7476 pkts/sec.",
+        "Significant TCP flags present: RST=1.0."
+      ],
+      "anomaly_explanation": [
+        "Statistical deviation confirmed: flow characteristics diverge from benign training baseline.",
+        "Significant outlier score (-0.4105): deep isolation depth in tree forest."
+      ],
+      "alert_correlation": [
+        "No multi-agent incident was generated (single agent triggered or below correlation threshold)."
+      ]
+    },
+    "supporting_evidence": {
+      "network_facts": {
+        "dst_port": 3389.0,
+        "protocol": 6.0,
+        "flow_duration_us": 2957756.0,
+        "tot_fwd_pkts": 10.0,
+        "tot_bwd_pkts": 7.0,
+        "flow_pkts_s": 5.747600546,
+        "flow_byts_s": 922.6589347,
+        "flags_observed": "RST=1.0"
+      },
+      "anomaly_facts": {
+        "anomaly_prediction": "Anomalous",
+        "raw_isolation_forest_score": -0.410451,
+        "severity": "HIGH"
+      },
+      "incident_facts": {
+        "network_prediction": "Benign",
+        "anomaly_prediction": "Anomalous",
+        "has_correlated_incident": false,
+        "threat_category": "Suspicious Anomaly",
+        "threat_severity": "MEDIUM"
+      }
+    },
+    "conflicting_signals": [
+      "Supervised model classified signature as Benign, but unsupervised model flagged flow as statistically anomalous."
+    ],
+    "reasoning": [
+      "Supervised Random Forest classified signature as 'Benign' with confidence 78.00%.",
+      "Negative isolation scores below -0.30 reflect rare multi-dimensional feature combinations.",
+      "Unsupervised model detected atypical metric distribution compared to learned normal traffic.",
+      "Critical SOC Principle: Anomaly alone does NOT confirm an attack. Likely a benign traffic spike, backup stream, or novel protocol."
+    ],
+    "limitations": [
+      "Analysis limited to 78 pre-extracted statistical flow metrics; payload inspection not available in flow records.",
+      "Isolation Forest provides unsupervised density estimation; it does not indicate malicious intent on its own."
+    ],
+    "recommended_next_steps": [
+      "Cross-reference timestamp against scheduled maintenance windows, backups, or batch syncs.",
+      "Evaluate whether destination host recently deployed new services or protocols.",
+      "Maintain telemetry surveillance on source IP without immediate blocking to prevent false positives."
+    ],
+    "timestamp": "2026-10-20T22:48:06.829735",
+    "created_at": "2026-10-20T22:48:06.829735"
+  },
+  {
+    "investigation_id": "8f02fbd7-dfbd-56b1-be04-cb88b0bd3f39",
+    "event_id": "3fdd536e-ee9f-4c0b-9c7b-f742d11505b7",
+    "threat_category": "Confirmed Attack",
+    "severity": "HIGH",
+    "investigation_status": "COMPLETED",
+    "summary": "INVESTIGATION VERIFIED ACTIVE THREAT: Dual confirmation across supervised attack signature and statistical baseline outlier detection. Supporting evidence indicates anomalous flow metrics.",
+    "findings_by_agent": {
+      "network_evidence": [
+        "Traffic targeted dynamic/ephemeral high port (Dst Port 53571.0).",
+        "High flow velocity observed: 20000.00 pkts/sec (potential flood or scan burst).",
+        "Unidirectional flow detected: forward packets transmitted with zero backward responses."
+      ],
+      "anomaly_explanation": [
+        "Statistical deviation confirmed: flow characteristics diverge from benign training baseline.",
+        "Significant outlier score (-0.3448): deep isolation depth in tree forest."
+      ],
+      "alert_correlation": [
+        "No multi-agent incident was generated (single agent triggered or below correlation threshold).",
+        "Dual Agreement: Supervised signature match and statistical outlier detection align on threat."
+      ]
+    },
+    "supporting_evidence": {
+      "network_facts": {
+        "dst_port": 53571.0,
+        "protocol": 6.0,
+        "flow_duration_us": 100.0,
+        "tot_fwd_pkts": 2.0,
+        "tot_bwd_pkts": 0.0,
+        "flow_pkts_s": 20000.0,
+        "flow_byts_s": 0.0
+      },
+      "anomaly_facts": {
+        "anomaly_prediction": "Anomalous",
+        "raw_isolation_forest_score": -0.344827,
+        "severity": "HIGH"
+      },
+      "incident_facts": {
+        "network_prediction": "Infilteration",
+        "anomaly_prediction": "Anomalous",
+        "has_correlated_incident": false,
+        "threat_category": "Confirmed Attack",
+        "threat_severity": "HIGH"
+      }
+    },
+    "conflicting_signals": [],
+    "reasoning": [
+      "High packet rate exceeds standard baseline interactive sessions.",
+      "Unanswered connections often signify probing, dropped traffic, or SYN scanning.",
+      "Supervised Random Forest classified signature as 'Infilteration' with confidence 95.00%.",
+      "Negative isolation scores below -0.30 reflect rare multi-dimensional feature combinations.",
+      "Unsupervised model detected atypical metric distribution compared to learned normal traffic.",
+      "High confidence in malicious activity; no conflicting signals detected."
+    ],
+    "limitations": [
+      "Analysis limited to 78 pre-extracted statistical flow metrics; payload inspection not available in flow records.",
+      "Isolation Forest provides unsupervised density estimation; it does not indicate malicious intent on its own."
+    ],
+    "recommended_next_steps": [
+      "Isolate affected source host endpoint or block destination IP at perimeter firewall.",
+      "Collect endpoint host artifact dumps and volatile memory for process tree analysis.",
+      "Initiate SOC incident response runbook for confirmed infiltration/intrusion."
+    ],
+    "timestamp": "2026-10-20T22:48:07.086843",
+    "created_at": "2026-10-20T22:48:07.086843"
+  },
+  {
+    "investigation_id": "7ff87a91-f8ed-5cad-9bcf-a45f67aa7898",
+    "event_id": "da15102e-fa2e-418e-abd2-ed35ac44537a",
+    "threat_category": "Suspicious Anomaly",
+    "severity": "MEDIUM",
+    "investigation_status": "REQUIRES_TIER2",
+    "summary": "INVESTIGATION FLAGGED STATISTICAL OUTLIER: Flow exhibited unusual volume or timing distribution, but supervised detection classified signature as Benign. Anomaly alone does NOT confirm malicious intent.",
+    "findings_by_agent": {
+      "network_evidence": [
+        "Traffic targeted dynamic/ephemeral high port (Dst Port 5355.0).",
+        "Flow velocity is moderate to low: 4.8266 pkts/sec.",
+        "Unidirectional flow detected: forward packets transmitted with zero backward responses."
+      ],
+      "anomaly_explanation": [
+        "Statistical deviation confirmed: flow characteristics diverge from benign training baseline.",
+        "Significant outlier score (-0.3808): deep isolation depth in tree forest."
+      ],
+      "alert_correlation": [
+        "No multi-agent incident was generated (single agent triggered or below correlation threshold)."
+      ]
+    },
+    "supporting_evidence": {
+      "network_facts": {
+        "dst_port": 5355.0,
+        "protocol": 17.0,
+        "flow_duration_us": 414369.0,
+        "tot_fwd_pkts": 2.0,
+        "tot_bwd_pkts": 0.0,
+        "flow_pkts_s": 4.826615891,
+        "flow_byts_s": 159.2783244
+      },
+      "anomaly_facts": {
+        "anomaly_prediction": "Anomalous",
+        "raw_isolation_forest_score": -0.380753,
+        "severity": "HIGH"
+      },
+      "incident_facts": {
+        "network_prediction": "Benign",
+        "anomaly_prediction": "Anomalous",
+        "has_correlated_incident": false,
+        "threat_category": "Suspicious Anomaly",
+        "threat_severity": "MEDIUM"
+      }
+    },
+    "conflicting_signals": [
+      "Supervised model classified signature as Benign, but unsupervised model flagged flow as statistically anomalous."
+    ],
+    "reasoning": [
+      "Unanswered connections often signify probing, dropped traffic, or SYN scanning.",
+      "Supervised Random Forest classified signature as 'Benign' with confidence 100.00%.",
+      "Negative isolation scores below -0.30 reflect rare multi-dimensional feature combinations.",
+      "Unsupervised model detected atypical metric distribution compared to learned normal traffic.",
+      "Critical SOC Principle: Anomaly alone does NOT confirm an attack. Likely a benign traffic spike, backup stream, or novel protocol."
+    ],
+    "limitations": [
+      "Analysis limited to 78 pre-extracted statistical flow metrics; payload inspection not available in flow records.",
+      "Isolation Forest provides unsupervised density estimation; it does not indicate malicious intent on its own."
+    ],
+    "recommended_next_steps": [
+      "Cross-reference timestamp against scheduled maintenance windows, backups, or batch syncs.",
+      "Evaluate whether destination host recently deployed new services or protocols.",
+      "Maintain telemetry surveillance on source IP without immediate blocking to prevent false positives."
+    ],
+    "timestamp": "2026-10-20T22:48:07.360679",
+    "created_at": "2026-10-20T22:48:07.360679"
+  },
+  {
+    "investigation_id": "344cea0b-187f-5d35-b93d-3530e410d152",
+    "event_id": "878ecb63-d9f6-4557-bab4-f85f118e91b9",
+    "threat_category": "Confirmed Attack",
+    "severity": "HIGH",
+    "investigation_status": "COMPLETED",
+    "summary": "INVESTIGATION VERIFIED ACTIVE THREAT: Dual confirmation across supervised attack signature and statistical baseline outlier detection. Supporting evidence indicates anomalous flow metrics.",
+    "findings_by_agent": {
+      "network_evidence": [
+        "Traffic targeted dynamic/ephemeral high port (Dst Port 51863.0).",
+        "High flow velocity observed: 222222.22 pkts/sec (potential flood or scan burst)."
+      ],
+      "anomaly_explanation": [
+        "Statistical deviation confirmed: flow characteristics diverge from benign training baseline.",
+        "Significant outlier score (-0.3721): deep isolation depth in tree forest."
+      ],
+      "alert_correlation": [
+        "No multi-agent incident was generated (single agent triggered or below correlation threshold).",
+        "Dual Agreement: Supervised signature match and statistical outlier detection align on threat."
+      ]
+    },
+    "supporting_evidence": {
+      "network_facts": {
+        "dst_port": 51863.0,
+        "protocol": 6.0,
+        "flow_duration_us": 9.0,
+        "tot_fwd_pkts": 1.0,
+        "tot_bwd_pkts": 1.0,
+        "flow_pkts_s": 222222.2222,
+        "flow_byts_s": 0.0
+      },
+      "anomaly_facts": {
+        "anomaly_prediction": "Anomalous",
+        "raw_isolation_forest_score": -0.372053,
+        "severity": "HIGH"
+      },
+      "incident_facts": {
+        "network_prediction": "Infilteration",
+        "anomaly_prediction": "Anomalous",
+        "has_correlated_incident": false,
+        "threat_category": "Confirmed Attack",
+        "threat_severity": "HIGH"
+      }
+    },
+    "conflicting_signals": [],
+    "reasoning": [
+      "High packet rate exceeds standard baseline interactive sessions.",
+      "Supervised Random Forest classified signature as 'Infilteration' with confidence 86.00%.",
+      "Negative isolation scores below -0.30 reflect rare multi-dimensional feature combinations.",
+      "Unsupervised model detected atypical metric distribution compared to learned normal traffic.",
+      "High confidence in malicious activity; no conflicting signals detected."
+    ],
+    "limitations": [
+      "Analysis limited to 78 pre-extracted statistical flow metrics; payload inspection not available in flow records.",
+      "Isolation Forest provides unsupervised density estimation; it does not indicate malicious intent on its own."
+    ],
+    "recommended_next_steps": [
+      "Isolate affected source host endpoint or block destination IP at perimeter firewall.",
+      "Collect endpoint host artifact dumps and volatile memory for process tree analysis.",
+      "Initiate SOC incident response runbook for confirmed infiltration/intrusion."
+    ],
+    "timestamp": "2026-10-20T22:48:07.624372",
+    "created_at": "2026-10-20T22:48:07.624372"
+  },
+  {
+    "investigation_id": "33e0f56d-2355-535b-ae7d-b2315a454984",
+    "event_id": "f6ad108a-2067-4e09-9210-8f4ba013450a",
+    "threat_category": "Suspicious Anomaly",
+    "severity": "MEDIUM",
+    "investigation_status": "REQUIRES_TIER2",
+    "summary": "INVESTIGATION FLAGGED STATISTICAL OUTLIER: Flow exhibited unusual volume or timing distribution, but supervised detection classified signature as Benign. Anomaly alone does NOT confirm malicious intent.",
+    "findings_by_agent": {
+      "network_evidence": [
+        "Flow velocity is moderate to low: 0.0985 pkts/sec.",
+        "Unidirectional flow detected: forward packets transmitted with zero backward responses."
+      ],
+      "anomaly_explanation": [
+        "Statistical deviation confirmed: flow characteristics diverge from benign training baseline.",
+        "Significant outlier score (-0.6005): deep isolation depth in tree forest.",
+        "Unusually long flow duration: 91.4 seconds, contributing to outlier profile."
+      ],
+      "alert_correlation": [
+        "No multi-agent incident was generated (single agent triggered or below correlation threshold)."
+      ]
+    },
+    "supporting_evidence": {
+      "network_facts": {
+        "dst_port": 67.0,
+        "protocol": 17.0,
+        "flow_duration_us": 91370920.0,
+        "tot_fwd_pkts": 9.0,
+        "tot_bwd_pkts": 0.0,
+        "flow_pkts_s": 0.09849961,
+        "flow_byts_s": 29.54988305
+      },
+      "anomaly_facts": {
+        "anomaly_prediction": "Anomalous",
+        "raw_isolation_forest_score": -0.60052,
+        "severity": "HIGH"
+      },
+      "incident_facts": {
+        "network_prediction": "Benign",
+        "anomaly_prediction": "Anomalous",
+        "has_correlated_incident": false,
+        "threat_category": "Suspicious Anomaly",
+        "threat_severity": "MEDIUM"
+      }
+    },
+    "conflicting_signals": [
+      "Supervised model classified signature as Benign, but unsupervised model flagged flow as statistically anomalous."
+    ],
+    "reasoning": [
+      "Unanswered connections often signify probing, dropped traffic, or SYN scanning.",
+      "Supervised Random Forest classified signature as 'Benign' with confidence 100.00%.",
+      "Negative isolation scores below -0.30 reflect rare multi-dimensional feature combinations.",
+      "Unsupervised model detected atypical metric distribution compared to learned normal traffic.",
+      "Critical SOC Principle: Anomaly alone does NOT confirm an attack. Likely a benign traffic spike, backup stream, or novel protocol."
+    ],
+    "limitations": [
+      "Analysis limited to 78 pre-extracted statistical flow metrics; payload inspection not available in flow records.",
+      "Isolation Forest provides unsupervised density estimation; it does not indicate malicious intent on its own."
+    ],
+    "recommended_next_steps": [
+      "Cross-reference timestamp against scheduled maintenance windows, backups, or batch syncs.",
+      "Evaluate whether destination host recently deployed new services or protocols.",
+      "Maintain telemetry surveillance on source IP without immediate blocking to prevent false positives."
+    ],
+    "timestamp": "2026-10-20T22:48:07.856746",
+    "created_at": "2026-10-20T22:48:07.856746"
+  },
+  {
+    "investigation_id": "4503481a-ca26-5c39-b747-cd694c47c7f4",
+    "event_id": "72305124-a2d5-493c-af93-160a6ab613cb",
+    "threat_category": "Confirmed Attack",
+    "severity": "HIGH",
+    "investigation_status": "COMPLETED",
+    "summary": "INVESTIGATION VERIFIED ACTIVE THREAT: Dual confirmation across supervised attack signature and statistical baseline outlier detection. Supporting evidence indicates anomalous flow metrics.",
+    "findings_by_agent": {
+      "network_evidence": [
+        "Traffic targeted common web service port (Dst Port 443.0).",
+        "High flow velocity observed: 3546.10 pkts/sec (potential flood or scan burst).",
+        "Significant TCP flags present: SYN=1.0.",
+        "Unidirectional flow detected: forward packets transmitted with zero backward responses."
+      ],
+      "anomaly_explanation": [
+        "Statistical deviation confirmed: flow characteristics diverge from benign training baseline.",
+        "Significant outlier score (-0.3698): deep isolation depth in tree forest."
+      ],
+      "alert_correlation": [
+        "No multi-agent incident was generated (single agent triggered or below correlation threshold).",
+        "Dual Agreement: Supervised signature match and statistical outlier detection align on threat."
+      ]
+    },
+    "supporting_evidence": {
+      "network_facts": {
+        "dst_port": 443.0,
+        "protocol": 6.0,
+        "flow_duration_us": 846.0,
+        "tot_fwd_pkts": 3.0,
+        "tot_bwd_pkts": 0.0,
+        "flow_pkts_s": 3546.099291,
+        "flow_byts_s": 91016.54846,
+        "flags_observed": "SYN=1.0"
+      },
+      "anomaly_facts": {
+        "anomaly_prediction": "Anomalous",
+        "raw_isolation_forest_score": -0.369802,
+        "severity": "HIGH"
+      },
+      "incident_facts": {
+        "network_prediction": "Infilteration",
+        "anomaly_prediction": "Anomalous",
+        "has_correlated_incident": false,
+        "threat_category": "Confirmed Attack",
+        "threat_severity": "HIGH"
+      }
+    },
+    "conflicting_signals": [],
+    "reasoning": [
+      "High packet rate exceeds standard baseline interactive sessions.",
+      "Unanswered connections often signify probing, dropped traffic, or SYN scanning.",
+      "Supervised Random Forest classified signature as 'Infilteration' with confidence 72.55%.",
+      "Negative isolation scores below -0.30 reflect rare multi-dimensional feature combinations.",
+      "Unsupervised model detected atypical metric distribution compared to learned normal traffic.",
+      "High confidence in malicious activity; no conflicting signals detected."
+    ],
+    "limitations": [
+      "Analysis limited to 78 pre-extracted statistical flow metrics; payload inspection not available in flow records.",
+      "Isolation Forest provides unsupervised density estimation; it does not indicate malicious intent on its own."
+    ],
+    "recommended_next_steps": [
+      "Isolate affected source host endpoint or block destination IP at perimeter firewall.",
+      "Collect endpoint host artifact dumps and volatile memory for process tree analysis.",
+      "Initiate SOC incident response runbook for confirmed infiltration/intrusion."
+    ],
+    "timestamp": "2026-10-20T22:48:08.167787",
+    "created_at": "2026-10-20T22:48:08.167787"
+  },
+  {
+    "investigation_id": "98fbe13c-f755-5d69-b513-becbb023ef0a",
+    "event_id": "b75fb1ca-f23c-43b5-a87a-4eac68e0f1e8",
+    "threat_category": "Suspicious Anomaly",
+    "severity": "MEDIUM",
+    "investigation_status": "REQUIRES_TIER2",
+    "summary": "INVESTIGATION FLAGGED STATISTICAL OUTLIER: Flow exhibited unusual volume or timing distribution, but supervised detection classified signature as Benign. Anomaly alone does NOT confirm malicious intent.",
+    "findings_by_agent": {
+      "network_evidence": [
+        "Destination port is 0, commonly observed in ICMP or non-standard protocol encapsulations.",
+        "Flow velocity is moderate to low: 0.0484 pkts/sec.",
+        "Unidirectional flow detected: forward packets transmitted with zero backward responses."
+      ],
+      "anomaly_explanation": [
+        "Statistical deviation confirmed: flow characteristics diverge from benign training baseline.",
+        "Significant outlier score (-0.5354): deep isolation depth in tree forest.",
+        "Unusually long flow duration: 62.0 seconds, contributing to outlier profile."
+      ],
+      "alert_correlation": [
+        "No multi-agent incident was generated (single agent triggered or below correlation threshold)."
+      ]
+    },
+    "supporting_evidence": {
+      "network_facts": {
+        "dst_port": 0.0,
+        "protocol": 0.0,
+        "flow_duration_us": 61997411.0,
+        "tot_fwd_pkts": 3.0,
+        "tot_bwd_pkts": 0.0,
+        "flow_pkts_s": 0.048389117,
+        "flow_byts_s": 0.0
+      },
+      "anomaly_facts": {
+        "anomaly_prediction": "Anomalous",
+        "raw_isolation_forest_score": -0.535429,
+        "severity": "HIGH"
+      },
+      "incident_facts": {
+        "network_prediction": "Benign",
+        "anomaly_prediction": "Anomalous",
+        "has_correlated_incident": false,
+        "threat_category": "Suspicious Anomaly",
+        "threat_severity": "MEDIUM"
+      }
+    },
+    "conflicting_signals": [
+      "Supervised model classified signature as Benign, but unsupervised model flagged flow as statistically anomalous."
+    ],
+    "reasoning": [
+      "Unanswered connections often signify probing, dropped traffic, or SYN scanning.",
+      "Supervised Random Forest classified signature as 'Benign' with confidence 100.00%.",
+      "Negative isolation scores below -0.30 reflect rare multi-dimensional feature combinations.",
+      "Unsupervised model detected atypical metric distribution compared to learned normal traffic.",
+      "Critical SOC Principle: Anomaly alone does NOT confirm an attack. Likely a benign traffic spike, backup stream, or novel protocol."
+    ],
+    "limitations": [
+      "Analysis limited to 78 pre-extracted statistical flow metrics; payload inspection not available in flow records.",
+      "Isolation Forest provides unsupervised density estimation; it does not indicate malicious intent on its own."
+    ],
+    "recommended_next_steps": [
+      "Cross-reference timestamp against scheduled maintenance windows, backups, or batch syncs.",
+      "Evaluate whether destination host recently deployed new services or protocols.",
+      "Maintain telemetry surveillance on source IP without immediate blocking to prevent false positives."
+    ],
+    "timestamp": "2026-10-20T22:48:08.487187",
+    "created_at": "2026-10-20T22:48:08.487187"
+  },
+  {
+    "investigation_id": "a9904fa1-85e7-5f18-82ef-6cc0f066acf3",
+    "event_id": "239fca81-4260-4d1e-8071-0e428ce354b7",
+    "threat_category": "Confirmed Attack",
+    "severity": "HIGH",
+    "investigation_status": "COMPLETED",
+    "summary": "INVESTIGATION VERIFIED ACTIVE THREAT: Dual confirmation across supervised attack signature and statistical baseline outlier detection. Supporting evidence indicates anomalous flow metrics.",
+    "findings_by_agent": {
+      "network_evidence": [
+        "Traffic targeted dynamic/ephemeral high port (Dst Port 53203.0).",
+        "High flow velocity observed: 22988.51 pkts/sec (potential flood or scan burst).",
+        "Unidirectional flow detected: forward packets transmitted with zero backward responses."
+      ],
+      "anomaly_explanation": [
+        "Statistical deviation confirmed: flow characteristics diverge from benign training baseline.",
+        "Significant outlier score (-0.3448): deep isolation depth in tree forest."
+      ],
+      "alert_correlation": [
+        "No multi-agent incident was generated (single agent triggered or below correlation threshold).",
+        "Dual Agreement: Supervised signature match and statistical outlier detection align on threat."
+      ]
+    },
+    "supporting_evidence": {
+      "network_facts": {
+        "dst_port": 53203.0,
+        "protocol": 6.0,
+        "flow_duration_us": 87.0,
+        "tot_fwd_pkts": 2.0,
+        "tot_bwd_pkts": 0.0,
+        "flow_pkts_s": 22988.50575,
+        "flow_byts_s": 0.0
+      },
+      "anomaly_facts": {
+        "anomaly_prediction": "Anomalous",
+        "raw_isolation_forest_score": -0.344827,
+        "severity": "HIGH"
+      },
+      "incident_facts": {
+        "network_prediction": "Infilteration",
+        "anomaly_prediction": "Anomalous",
+        "has_correlated_incident": false,
+        "threat_category": "Confirmed Attack",
+        "threat_severity": "HIGH"
+      }
+    },
+    "conflicting_signals": [],
+    "reasoning": [
+      "High packet rate exceeds standard baseline interactive sessions.",
+      "Unanswered connections often signify probing, dropped traffic, or SYN scanning.",
+      "Supervised Random Forest classified signature as 'Infilteration' with confidence 92.00%.",
+      "Negative isolation scores below -0.30 reflect rare multi-dimensional feature combinations.",
+      "Unsupervised model detected atypical metric distribution compared to learned normal traffic.",
+      "High confidence in malicious activity; no conflicting signals detected."
+    ],
+    "limitations": [
+      "Analysis limited to 78 pre-extracted statistical flow metrics; payload inspection not available in flow records.",
+      "Isolation Forest provides unsupervised density estimation; it does not indicate malicious intent on its own."
+    ],
+    "recommended_next_steps": [
+      "Isolate affected source host endpoint or block destination IP at perimeter firewall.",
+      "Collect endpoint host artifact dumps and volatile memory for process tree analysis.",
+      "Initiate SOC incident response runbook for confirmed infiltration/intrusion."
+    ],
+    "timestamp": "2026-10-20T22:48:08.739029",
+    "created_at": "2026-10-20T22:48:08.739029"
+  },
+  {
+    "investigation_id": "a2786bbe-0391-5eda-9013-d722ad50b246",
+    "event_id": "c09305a4-6bdd-4792-961b-f4673d846f55",
+    "threat_category": "Suspicious Anomaly",
+    "severity": "MEDIUM",
+    "investigation_status": "REQUIRES_TIER2",
+    "summary": "INVESTIGATION FLAGGED STATISTICAL OUTLIER: Flow exhibited unusual volume or timing distribution, but supervised detection classified signature as Benign. Anomaly alone does NOT confirm malicious intent.",
+    "findings_by_agent": {
+      "network_evidence": [
+        "Destination port is 0, commonly observed in ICMP or non-standard protocol encapsulations.",
+        "Flow velocity is moderate to low: 0.0328 pkts/sec.",
+        "Unidirectional flow detected: forward packets transmitted with zero backward responses."
+      ],
+      "anomaly_explanation": [
+        "Statistical deviation confirmed: flow characteristics diverge from benign training baseline.",
+        "Significant outlier score (-0.5108): deep isolation depth in tree forest.",
+        "Unusually long flow duration: 61.0 seconds, contributing to outlier profile."
+      ],
+      "alert_correlation": [
+        "No multi-agent incident was generated (single agent triggered or below correlation threshold)."
+      ]
+    },
+    "supporting_evidence": {
+      "network_facts": {
+        "dst_port": 0.0,
+        "protocol": 0.0,
+        "flow_duration_us": 60997585.0,
+        "tot_fwd_pkts": 2.0,
+        "tot_bwd_pkts": 0.0,
+        "flow_pkts_s": 0.032788183,
+        "flow_byts_s": 0.0
+      },
+      "anomaly_facts": {
+        "anomaly_prediction": "Anomalous",
+        "raw_isolation_forest_score": -0.510768,
+        "severity": "HIGH"
+      },
+      "incident_facts": {
+        "network_prediction": "Benign",
+        "anomaly_prediction": "Anomalous",
+        "has_correlated_incident": false,
+        "threat_category": "Suspicious Anomaly",
+        "threat_severity": "MEDIUM"
+      }
+    },
+    "conflicting_signals": [
+      "Supervised model classified signature as Benign, but unsupervised model flagged flow as statistically anomalous."
+    ],
+    "reasoning": [
+      "Unanswered connections often signify probing, dropped traffic, or SYN scanning.",
+      "Supervised Random Forest classified signature as 'Benign' with confidence 100.00%.",
+      "Negative isolation scores below -0.30 reflect rare multi-dimensional feature combinations.",
+      "Unsupervised model detected atypical metric distribution compared to learned normal traffic.",
+      "Critical SOC Principle: Anomaly alone does NOT confirm an attack. Likely a benign traffic spike, backup stream, or novel protocol."
+    ],
+    "limitations": [
+      "Analysis limited to 78 pre-extracted statistical flow metrics; payload inspection not available in flow records.",
+      "Isolation Forest provides unsupervised density estimation; it does not indicate malicious intent on its own."
+    ],
+    "recommended_next_steps": [
+      "Cross-reference timestamp against scheduled maintenance windows, backups, or batch syncs.",
+      "Evaluate whether destination host recently deployed new services or protocols.",
+      "Maintain telemetry surveillance on source IP without immediate blocking to prevent false positives."
+    ],
+    "timestamp": "2026-10-20T22:48:09.046966",
+    "created_at": "2026-10-20T22:48:09.046966"
+  },
+  {
+    "investigation_id": "efe7db89-396d-571b-9f65-d632e4139a0d",
+    "event_id": "510e7015-6aff-43b7-b7a4-79df5b18bc65",
+    "threat_category": "Confirmed Attack",
+    "severity": "HIGH",
+    "investigation_status": "COMPLETED",
+    "summary": "INVESTIGATION VERIFIED ACTIVE THREAT: Dual confirmation across supervised attack signature and statistical baseline outlier detection. Supporting evidence indicates anomalous flow metrics.",
+    "findings_by_agent": {
+      "network_evidence": [
+        "Traffic targeted remote administration port (Dst Port 3389.0).",
+        "Flow velocity is moderate to low: 8.6838 pkts/sec.",
+        "Significant TCP flags present: RST=1.0."
+      ],
+      "anomaly_explanation": [
+        "Statistical deviation confirmed: flow characteristics diverge from benign training baseline.",
+        "Significant outlier score (-0.4057): deep isolation depth in tree forest."
+      ],
+      "alert_correlation": [
+        "No multi-agent incident was generated (single agent triggered or below correlation threshold).",
+        "Dual Agreement: Supervised signature match and statistical outlier detection align on threat."
+      ]
+    },
+    "supporting_evidence": {
+      "network_facts": {
+        "dst_port": 3389.0,
+        "protocol": 6.0,
+        "flow_duration_us": 1842508.0,
+        "tot_fwd_pkts": 8.0,
+        "tot_bwd_pkts": 8.0,
+        "flow_pkts_s": 8.683815755,
+        "flow_byts_s": 1481.133325,
+        "flags_observed": "RST=1.0"
+      },
+      "anomaly_facts": {
+        "anomaly_prediction": "Anomalous",
+        "raw_isolation_forest_score": -0.405726,
+        "severity": "HIGH"
+      },
+      "incident_facts": {
+        "network_prediction": "Infilteration",
+        "anomaly_prediction": "Anomalous",
+        "has_correlated_incident": false,
+        "threat_category": "Confirmed Attack",
+        "threat_severity": "HIGH"
+      }
+    },
+    "conflicting_signals": [],
+    "reasoning": [
+      "Supervised Random Forest classified signature as 'Infilteration' with confidence 86.00%.",
+      "Negative isolation scores below -0.30 reflect rare multi-dimensional feature combinations.",
+      "Unsupervised model detected atypical metric distribution compared to learned normal traffic.",
+      "High confidence in malicious activity; no conflicting signals detected."
+    ],
+    "limitations": [
+      "Analysis limited to 78 pre-extracted statistical flow metrics; payload inspection not available in flow records.",
+      "Isolation Forest provides unsupervised density estimation; it does not indicate malicious intent on its own."
+    ],
+    "recommended_next_steps": [
+      "Isolate affected source host endpoint or block destination IP at perimeter firewall.",
+      "Collect endpoint host artifact dumps and volatile memory for process tree analysis.",
+      "Initiate SOC incident response runbook for confirmed infiltration/intrusion."
+    ],
+    "timestamp": "2026-10-20T22:48:09.457798",
+    "created_at": "2026-10-20T22:48:09.457798"
+  },
+  {
+    "investigation_id": "424aa406-e8f7-5443-849b-cf73425580fb",
+    "event_id": "1f27079e-a67f-4153-9907-20359a920a29",
+    "threat_category": "Suspicious Anomaly",
+    "severity": "MEDIUM",
+    "investigation_status": "REQUIRES_TIER2",
+    "summary": "INVESTIGATION FLAGGED STATISTICAL OUTLIER: Flow exhibited unusual volume or timing distribution, but supervised detection classified signature as Benign. Anomaly alone does NOT confirm malicious intent.",
+    "findings_by_agent": {
+      "network_evidence": [
+        "Destination port is 0, commonly observed in ICMP or non-standard protocol encapsulations.",
+        "Flow velocity is moderate to low: 0.0328 pkts/sec.",
+        "Unidirectional flow detected: forward packets transmitted with zero backward responses."
+      ],
+      "anomaly_explanation": [
+        "Statistical deviation confirmed: flow characteristics diverge from benign training baseline.",
+        "Significant outlier score (-0.5108): deep isolation depth in tree forest.",
+        "Unusually long flow duration: 61.0 seconds, contributing to outlier profile."
+      ],
+      "alert_correlation": [
+        "No multi-agent incident was generated (single agent triggered or below correlation threshold)."
+      ]
+    },
+    "supporting_evidence": {
+      "network_facts": {
+        "dst_port": 0.0,
+        "protocol": 0.0,
+        "flow_duration_us": 60997538.0,
+        "tot_fwd_pkts": 2.0,
+        "tot_bwd_pkts": 0.0,
+        "flow_pkts_s": 0.032788209,
+        "flow_byts_s": 0.0
+      },
+      "anomaly_facts": {
+        "anomaly_prediction": "Anomalous",
+        "raw_isolation_forest_score": -0.510768,
+        "severity": "HIGH"
+      },
+      "incident_facts": {
+        "network_prediction": "Benign",
+        "anomaly_prediction": "Anomalous",
+        "has_correlated_incident": false,
+        "threat_category": "Suspicious Anomaly",
+        "threat_severity": "MEDIUM"
+      }
+    },
+    "conflicting_signals": [
+      "Supervised model classified signature as Benign, but unsupervised model flagged flow as statistically anomalous."
+    ],
+    "reasoning": [
+      "Unanswered connections often signify probing, dropped traffic, or SYN scanning.",
+      "Supervised Random Forest classified signature as 'Benign' with confidence 100.00%.",
+      "Negative isolation scores below -0.30 reflect rare multi-dimensional feature combinations.",
+      "Unsupervised model detected atypical metric distribution compared to learned normal traffic.",
+      "Critical SOC Principle: Anomaly alone does NOT confirm an attack. Likely a benign traffic spike, backup stream, or novel protocol."
+    ],
+    "limitations": [
+      "Analysis limited to 78 pre-extracted statistical flow metrics; payload inspection not available in flow records.",
+      "Isolation Forest provides unsupervised density estimation; it does not indicate malicious intent on its own."
+    ],
+    "recommended_next_steps": [
+      "Cross-reference timestamp against scheduled maintenance windows, backups, or batch syncs.",
+      "Evaluate whether destination host recently deployed new services or protocols.",
+      "Maintain telemetry surveillance on source IP without immediate blocking to prevent false positives."
+    ],
+    "timestamp": "2026-10-20T22:48:09.808497",
+    "created_at": "2026-10-20T22:48:09.808497"
+  },
+  {
+    "investigation_id": "450f1840-6ec3-542e-8c2c-e1e4c41b40ac",
+    "event_id": "0f8bd9fc-3fe7-4548-8629-7ebfc74a0bab",
+    "threat_category": "Suspicious Anomaly",
+    "severity": "MEDIUM",
+    "investigation_status": "REQUIRES_TIER2",
+    "summary": "INVESTIGATION FLAGGED STATISTICAL OUTLIER: Flow exhibited unusual volume or timing distribution, but supervised detection classified signature as Benign. Anomaly alone does NOT confirm malicious intent.",
+    "findings_by_agent": {
+      "network_evidence": [
+        "Flow velocity is moderate to low: 0.0985 pkts/sec.",
+        "Unidirectional flow detected: forward packets transmitted with zero backward responses."
+      ],
+      "anomaly_explanation": [
+        "Statistical deviation confirmed: flow characteristics diverge from benign training baseline.",
+        "Significant outlier score (-0.6003): deep isolation depth in tree forest.",
+        "Unusually long flow duration: 91.3 seconds, contributing to outlier profile."
+      ],
+      "alert_correlation": [
+        "No multi-agent incident was generated (single agent triggered or below correlation threshold)."
+      ]
+    },
+    "supporting_evidence": {
+      "network_facts": {
+        "dst_port": 67.0,
+        "protocol": 17.0,
+        "flow_duration_us": 91339716.0,
+        "tot_fwd_pkts": 9.0,
+        "tot_bwd_pkts": 0.0,
+        "flow_pkts_s": 0.09853326,
+        "flow_byts_s": 29.55997805
+      },
+      "anomaly_facts": {
+        "anomaly_prediction": "Anomalous",
+        "raw_isolation_forest_score": -0.600317,
+        "severity": "HIGH"
+      },
+      "incident_facts": {
+        "network_prediction": "Benign",
+        "anomaly_prediction": "Anomalous",
+        "has_correlated_incident": false,
+        "threat_category": "Suspicious Anomaly",
+        "threat_severity": "MEDIUM"
+      }
+    },
+    "conflicting_signals": [
+      "Supervised model classified signature as Benign, but unsupervised model flagged flow as statistically anomalous."
+    ],
+    "reasoning": [
+      "Unanswered connections often signify probing, dropped traffic, or SYN scanning.",
+      "Supervised Random Forest classified signature as 'Benign' with confidence 100.00%.",
+      "Negative isolation scores below -0.30 reflect rare multi-dimensional feature combinations.",
+      "Unsupervised model detected atypical metric distribution compared to learned normal traffic.",
+      "Critical SOC Principle: Anomaly alone does NOT confirm an attack. Likely a benign traffic spike, backup stream, or novel protocol."
+    ],
+    "limitations": [
+      "Analysis limited to 78 pre-extracted statistical flow metrics; payload inspection not available in flow records.",
+      "Isolation Forest provides unsupervised density estimation; it does not indicate malicious intent on its own."
+    ],
+    "recommended_next_steps": [
+      "Cross-reference timestamp against scheduled maintenance windows, backups, or batch syncs.",
+      "Evaluate whether destination host recently deployed new services or protocols.",
+      "Maintain telemetry surveillance on source IP without immediate blocking to prevent false positives."
+    ],
+    "timestamp": "2026-10-20T22:48:10.136999",
+    "created_at": "2026-10-20T22:48:10.136999"
+  },
+  {
+    "investigation_id": "06d15d8a-b48e-57cc-8b8d-b4c91e442aef",
+    "event_id": "f89d570c-0393-4214-92db-74f3bdc59eb2",
+    "threat_category": "Suspicious Anomaly",
+    "severity": "MEDIUM",
+    "investigation_status": "REQUIRES_TIER2",
+    "summary": "INVESTIGATION FLAGGED STATISTICAL OUTLIER: Flow exhibited unusual volume or timing distribution, but supervised detection classified signature as Benign. Anomaly alone does NOT confirm malicious intent.",
+    "findings_by_agent": {
+      "network_evidence": [
+        "Destination port is 0, commonly observed in ICMP or non-standard protocol encapsulations.",
+        "Flow velocity is moderate to low: 0.0484 pkts/sec.",
+        "Unidirectional flow detected: forward packets transmitted with zero backward responses."
+      ],
+      "anomaly_explanation": [
+        "Statistical deviation confirmed: flow characteristics diverge from benign training baseline.",
+        "Significant outlier score (-0.5354): deep isolation depth in tree forest.",
+        "Unusually long flow duration: 62.0 seconds, contributing to outlier profile."
+      ],
+      "alert_correlation": [
+        "No multi-agent incident was generated (single agent triggered or below correlation threshold)."
+      ]
+    },
+    "supporting_evidence": {
+      "network_facts": {
+        "dst_port": 0.0,
+        "protocol": 0.0,
+        "flow_duration_us": 61997505.0,
+        "tot_fwd_pkts": 3.0,
+        "tot_bwd_pkts": 0.0,
+        "flow_pkts_s": 0.048389044,
+        "flow_byts_s": 0.0
+      },
+      "anomaly_facts": {
+        "anomaly_prediction": "Anomalous",
+        "raw_isolation_forest_score": -0.535429,
+        "severity": "HIGH"
+      },
+      "incident_facts": {
+        "network_prediction": "Benign",
+        "anomaly_prediction": "Anomalous",
+        "has_correlated_incident": false,
+        "threat_category": "Suspicious Anomaly",
+        "threat_severity": "MEDIUM"
+      }
+    },
+    "conflicting_signals": [
+      "Supervised model classified signature as Benign, but unsupervised model flagged flow as statistically anomalous."
+    ],
+    "reasoning": [
+      "Unanswered connections often signify probing, dropped traffic, or SYN scanning.",
+      "Supervised Random Forest classified signature as 'Benign' with confidence 100.00%.",
+      "Negative isolation scores below -0.30 reflect rare multi-dimensional feature combinations.",
+      "Unsupervised model detected atypical metric distribution compared to learned normal traffic.",
+      "Critical SOC Principle: Anomaly alone does NOT confirm an attack. Likely a benign traffic spike, backup stream, or novel protocol."
+    ],
+    "limitations": [
+      "Analysis limited to 78 pre-extracted statistical flow metrics; payload inspection not available in flow records.",
+      "Isolation Forest provides unsupervised density estimation; it does not indicate malicious intent on its own."
+    ],
+    "recommended_next_steps": [
+      "Cross-reference timestamp against scheduled maintenance windows, backups, or batch syncs.",
+      "Evaluate whether destination host recently deployed new services or protocols.",
+      "Maintain telemetry surveillance on source IP without immediate blocking to prevent false positives."
+    ],
+    "timestamp": "2026-10-20T22:48:10.480190",
+    "created_at": "2026-10-20T22:48:10.480190"
+  },
+  {
+    "investigation_id": "c6a1c681-a9bd-5ce5-ade8-f6d89efd04b5",
+    "event_id": "da3e6c8d-acd1-4fcd-b302-43429a6dd450",
+    "threat_category": "Suspicious Anomaly",
+    "severity": "MEDIUM",
+    "investigation_status": "REQUIRES_TIER2",
+    "summary": "INVESTIGATION FLAGGED STATISTICAL OUTLIER: Flow exhibited unusual volume or timing distribution, but supervised detection classified signature as Benign. Anomaly alone does NOT confirm malicious intent.",
+    "findings_by_agent": {
+      "network_evidence": [
+        "Traffic targeted dynamic/ephemeral high port (Dst Port 5355.0).",
+        "Flow velocity is moderate to low: 4.8317 pkts/sec.",
+        "Unidirectional flow detected: forward packets transmitted with zero backward responses."
+      ],
+      "anomaly_explanation": [
+        "Statistical deviation confirmed: flow characteristics diverge from benign training baseline.",
+        "Significant outlier score (-0.3808): deep isolation depth in tree forest."
+      ],
+      "alert_correlation": [
+        "No multi-agent incident was generated (single agent triggered or below correlation threshold)."
+      ]
+    },
+    "supporting_evidence": {
+      "network_facts": {
+        "dst_port": 5355.0,
+        "protocol": 17.0,
+        "flow_duration_us": 413936.0,
+        "tot_fwd_pkts": 2.0,
+        "tot_bwd_pkts": 0.0,
+        "flow_pkts_s": 4.831664798,
+        "flow_byts_s": 159.4449383
+      },
+      "anomaly_facts": {
+        "anomaly_prediction": "Anomalous",
+        "raw_isolation_forest_score": -0.380753,
+        "severity": "HIGH"
+      },
+      "incident_facts": {
+        "network_prediction": "Benign",
+        "anomaly_prediction": "Anomalous",
+        "has_correlated_incident": false,
+        "threat_category": "Suspicious Anomaly",
+        "threat_severity": "MEDIUM"
+      }
+    },
+    "conflicting_signals": [
+      "Supervised model classified signature as Benign, but unsupervised model flagged flow as statistically anomalous."
+    ],
+    "reasoning": [
+      "Unanswered connections often signify probing, dropped traffic, or SYN scanning.",
+      "Supervised Random Forest classified signature as 'Benign' with confidence 100.00%.",
+      "Negative isolation scores below -0.30 reflect rare multi-dimensional feature combinations.",
+      "Unsupervised model detected atypical metric distribution compared to learned normal traffic.",
+      "Critical SOC Principle: Anomaly alone does NOT confirm an attack. Likely a benign traffic spike, backup stream, or novel protocol."
+    ],
+    "limitations": [
+      "Analysis limited to 78 pre-extracted statistical flow metrics; payload inspection not available in flow records.",
+      "Isolation Forest provides unsupervised density estimation; it does not indicate malicious intent on its own."
+    ],
+    "recommended_next_steps": [
+      "Cross-reference timestamp against scheduled maintenance windows, backups, or batch syncs.",
+      "Evaluate whether destination host recently deployed new services or protocols.",
+      "Maintain telemetry surveillance on source IP without immediate blocking to prevent false positives."
+    ],
+    "timestamp": "2026-10-20T22:48:10.841272",
+    "created_at": "2026-10-20T22:48:10.841272"
+  },
+  {
+    "investigation_id": "72a22b67-7d6d-505b-a18c-9814d3aa241c",
+    "event_id": "ad3cc96e-2136-41ca-888a-7aa24ebcf39c",
+    "threat_category": "Confirmed Attack",
+    "severity": "HIGH",
+    "investigation_status": "COMPLETED",
+    "summary": "INVESTIGATION VERIFIED ACTIVE THREAT: Dual confirmation across supervised attack signature and statistical baseline outlier detection. Supporting evidence indicates anomalous flow metrics.",
+    "findings_by_agent": {
+      "network_evidence": [
+        "Traffic targeted common web service port (Dst Port 443.0).",
+        "High flow velocity observed: 5163.51 pkts/sec (potential flood or scan burst).",
+        "Significant TCP flags present: SYN=1.0.",
+        "Unidirectional flow detected: forward packets transmitted with zero backward responses."
+      ],
+      "anomaly_explanation": [
+        "Statistical deviation confirmed: flow characteristics diverge from benign training baseline.",
+        "Significant outlier score (-0.3692): deep isolation depth in tree forest."
+      ],
+      "alert_correlation": [
+        "No multi-agent incident was generated (single agent triggered or below correlation threshold).",
+        "Dual Agreement: Supervised signature match and statistical outlier detection align on threat."
+      ]
+    },
+    "supporting_evidence": {
+      "network_facts": {
+        "dst_port": 443.0,
+        "protocol": 6.0,
+        "flow_duration_us": 581.0,
+        "tot_fwd_pkts": 3.0,
+        "tot_bwd_pkts": 0.0,
+        "flow_pkts_s": 5163.511188,
+        "flow_byts_s": 132530.1205,
+        "flags_observed": "SYN=1.0"
+      },
+      "anomaly_facts": {
+        "anomaly_prediction": "Anomalous",
+        "raw_isolation_forest_score": -0.369241,
+        "severity": "HIGH"
+      },
+      "incident_facts": {
+        "network_prediction": "Infilteration",
+        "anomaly_prediction": "Anomalous",
+        "has_correlated_incident": false,
+        "threat_category": "Confirmed Attack",
+        "threat_severity": "HIGH"
+      }
+    },
+    "conflicting_signals": [],
+    "reasoning": [
+      "High packet rate exceeds standard baseline interactive sessions.",
+      "Unanswered connections often signify probing, dropped traffic, or SYN scanning.",
+      "Supervised Random Forest classified signature as 'Infilteration' with confidence 88.00%.",
+      "Negative isolation scores below -0.30 reflect rare multi-dimensional feature combinations.",
+      "Unsupervised model detected atypical metric distribution compared to learned normal traffic.",
+      "High confidence in malicious activity; no conflicting signals detected."
+    ],
+    "limitations": [
+      "Analysis limited to 78 pre-extracted statistical flow metrics; payload inspection not available in flow records.",
+      "Isolation Forest provides unsupervised density estimation; it does not indicate malicious intent on its own."
+    ],
+    "recommended_next_steps": [
+      "Isolate affected source host endpoint or block destination IP at perimeter firewall.",
+      "Collect endpoint host artifact dumps and volatile memory for process tree analysis.",
+      "Initiate SOC incident response runbook for confirmed infiltration/intrusion."
+    ],
+    "timestamp": "2026-10-20T22:48:11.173109",
+    "created_at": "2026-10-20T22:48:11.173109"
+  },
+  {
+    "investigation_id": "04585893-b796-59c3-aba3-0dd63e0e1dd2",
+    "event_id": "d735eb0b-2805-4193-8421-0cfa1be33d77",
+    "threat_category": "Suspicious Anomaly",
+    "severity": "MEDIUM",
+    "investigation_status": "REQUIRES_TIER2",
+    "summary": "INVESTIGATION FLAGGED STATISTICAL OUTLIER: Flow exhibited unusual volume or timing distribution, but supervised detection classified signature as Benign. Anomaly alone does NOT confirm malicious intent.",
+    "findings_by_agent": {
+      "network_evidence": [
+        "Destination port is 0, commonly observed in ICMP or non-standard protocol encapsulations.",
+        "Flow velocity is moderate to low: 0.0328 pkts/sec.",
+        "Unidirectional flow detected: forward packets transmitted with zero backward responses."
+      ],
+      "anomaly_explanation": [
+        "Statistical deviation confirmed: flow characteristics diverge from benign training baseline.",
+        "Significant outlier score (-0.5108): deep isolation depth in tree forest.",
+        "Unusually long flow duration: 61.0 seconds, contributing to outlier profile."
+      ],
+      "alert_correlation": [
+        "No multi-agent incident was generated (single agent triggered or below correlation threshold)."
+      ]
+    },
+    "supporting_evidence": {
+      "network_facts": {
+        "dst_port": 0.0,
+        "protocol": 0.0,
+        "flow_duration_us": 60997544.0,
+        "tot_fwd_pkts": 2.0,
+        "tot_bwd_pkts": 0.0,
+        "flow_pkts_s": 0.032788205,
+        "flow_byts_s": 0.0
+      },
+      "anomaly_facts": {
+        "anomaly_prediction": "Anomalous",
+        "raw_isolation_forest_score": -0.510768,
+        "severity": "HIGH"
+      },
+      "incident_facts": {
+        "network_prediction": "Benign",
+        "anomaly_prediction": "Anomalous",
+        "has_correlated_incident": false,
+        "threat_category": "Suspicious Anomaly",
+        "threat_severity": "MEDIUM"
+      }
+    },
+    "conflicting_signals": [
+      "Supervised model classified signature as Benign, but unsupervised model flagged flow as statistically anomalous."
+    ],
+    "reasoning": [
+      "Unanswered connections often signify probing, dropped traffic, or SYN scanning.",
+      "Supervised Random Forest classified signature as 'Benign' with confidence 100.00%.",
+      "Negative isolation scores below -0.30 reflect rare multi-dimensional feature combinations.",
+      "Unsupervised model detected atypical metric distribution compared to learned normal traffic.",
+      "Critical SOC Principle: Anomaly alone does NOT confirm an attack. Likely a benign traffic spike, backup stream, or novel protocol."
+    ],
+    "limitations": [
+      "Analysis limited to 78 pre-extracted statistical flow metrics; payload inspection not available in flow records.",
+      "Isolation Forest provides unsupervised density estimation; it does not indicate malicious intent on its own."
+    ],
+    "recommended_next_steps": [
+      "Cross-reference timestamp against scheduled maintenance windows, backups, or batch syncs.",
+      "Evaluate whether destination host recently deployed new services or protocols.",
+      "Maintain telemetry surveillance on source IP without immediate blocking to prevent false positives."
+    ],
+    "timestamp": "2026-10-20T22:48:11.434833",
+    "created_at": "2026-10-20T22:48:11.434833"
+  },
+  {
+    "investigation_id": "450c5981-36b5-54e9-bdac-daca7e6dab16",
+    "event_id": "f0d490de-724b-413c-92da-4d7d9d384a2a",
+    "threat_category": "Suspicious Anomaly",
+    "severity": "MEDIUM",
+    "investigation_status": "REQUIRES_TIER2",
+    "summary": "INVESTIGATION FLAGGED STATISTICAL OUTLIER: Flow exhibited unusual volume or timing distribution, but supervised detection classified signature as Benign. Anomaly alone does NOT confirm malicious intent.",
+    "findings_by_agent": {
+      "network_evidence": [
+        "Traffic targeted common web service port (Dst Port 443.0).",
+        "High flow velocity observed: 2139.80 pkts/sec (potential flood or scan burst).",
+        "Significant TCP flags present: SYN=1.0.",
+        "Unidirectional flow detected: forward packets transmitted with zero backward responses."
+      ],
+      "anomaly_explanation": [
+        "Statistical deviation confirmed: flow characteristics diverge from benign training baseline.",
+        "Significant outlier score (-0.3708): deep isolation depth in tree forest."
+      ],
+      "alert_correlation": [
+        "No multi-agent incident was generated (single agent triggered or below correlation threshold)."
+      ]
+    },
+    "supporting_evidence": {
+      "network_facts": {
+        "dst_port": 443.0,
+        "protocol": 6.0,
+        "flow_duration_us": 1402.0,
+        "tot_fwd_pkts": 3.0,
+        "tot_bwd_pkts": 0.0,
+        "flow_pkts_s": 2139.800285,
+        "flow_byts_s": 54921.54066,
+        "flags_observed": "SYN=1.0"
+      },
+      "anomaly_facts": {
+        "anomaly_prediction": "Anomalous",
+        "raw_isolation_forest_score": -0.370776,
+        "severity": "HIGH"
+      },
+      "incident_facts": {
+        "network_prediction": "Benign",
+        "anomaly_prediction": "Anomalous",
+        "has_correlated_incident": false,
+        "threat_category": "Suspicious Anomaly",
+        "threat_severity": "MEDIUM"
+      }
+    },
+    "conflicting_signals": [
+      "Supervised model classified signature as Benign, but unsupervised model flagged flow as statistically anomalous."
+    ],
+    "reasoning": [
+      "High packet rate exceeds standard baseline interactive sessions.",
+      "Unanswered connections often signify probing, dropped traffic, or SYN scanning.",
+      "Supervised Random Forest classified signature as 'Benign' with confidence 50.00%.",
+      "Negative isolation scores below -0.30 reflect rare multi-dimensional feature combinations.",
+      "Unsupervised model detected atypical metric distribution compared to learned normal traffic.",
+      "Critical SOC Principle: Anomaly alone does NOT confirm an attack. Likely a benign traffic spike, backup stream, or novel protocol."
+    ],
+    "limitations": [
+      "Analysis limited to 78 pre-extracted statistical flow metrics; payload inspection not available in flow records.",
+      "Isolation Forest provides unsupervised density estimation; it does not indicate malicious intent on its own."
+    ],
+    "recommended_next_steps": [
+      "Cross-reference timestamp against scheduled maintenance windows, backups, or batch syncs.",
+      "Evaluate whether destination host recently deployed new services or protocols.",
+      "Maintain telemetry surveillance on source IP without immediate blocking to prevent false positives."
+    ],
+    "timestamp": "2026-10-20T22:48:11.761460",
+    "created_at": "2026-10-20T22:48:11.761460"
+  },
+  {
+    "investigation_id": "0b036612-3060-52ab-afc7-ee1c301946c2",
+    "event_id": "f8335ac3-7b5c-4c1d-b712-71b8453b5fbd",
+    "threat_category": "Suspicious Anomaly",
+    "severity": "MEDIUM",
+    "investigation_status": "REQUIRES_TIER2",
+    "summary": "INVESTIGATION FLAGGED STATISTICAL OUTLIER: Flow exhibited unusual volume or timing distribution, but supervised detection classified signature as Benign. Anomaly alone does NOT confirm malicious intent.",
+    "findings_by_agent": {
+      "network_evidence": [
+        "Destination port is 0, commonly observed in ICMP or non-standard protocol encapsulations.",
+        "Flow velocity is moderate to low: 0.0328 pkts/sec.",
+        "Unidirectional flow detected: forward packets transmitted with zero backward responses."
+      ],
+      "anomaly_explanation": [
+        "Statistical deviation confirmed: flow characteristics diverge from benign training baseline.",
+        "Significant outlier score (-0.5108): deep isolation depth in tree forest.",
+        "Unusually long flow duration: 61.0 seconds, contributing to outlier profile."
+      ],
+      "alert_correlation": [
+        "No multi-agent incident was generated (single agent triggered or below correlation threshold)."
+      ]
+    },
+    "supporting_evidence": {
+      "network_facts": {
+        "dst_port": 0.0,
+        "protocol": 0.0,
+        "flow_duration_us": 61013174.0,
+        "tot_fwd_pkts": 2.0,
+        "tot_bwd_pkts": 0.0,
+        "flow_pkts_s": 0.032779806,
+        "flow_byts_s": 0.0
+      },
+      "anomaly_facts": {
+        "anomaly_prediction": "Anomalous",
+        "raw_isolation_forest_score": -0.510768,
+        "severity": "HIGH"
+      },
+      "incident_facts": {
+        "network_prediction": "Benign",
+        "anomaly_prediction": "Anomalous",
+        "has_correlated_incident": false,
+        "threat_category": "Suspicious Anomaly",
+        "threat_severity": "MEDIUM"
+      }
+    },
+    "conflicting_signals": [
+      "Supervised model classified signature as Benign, but unsupervised model flagged flow as statistically anomalous."
+    ],
+    "reasoning": [
+      "Unanswered connections often signify probing, dropped traffic, or SYN scanning.",
+      "Supervised Random Forest classified signature as 'Benign' with confidence 100.00%.",
+      "Negative isolation scores below -0.30 reflect rare multi-dimensional feature combinations.",
+      "Unsupervised model detected atypical metric distribution compared to learned normal traffic.",
+      "Critical SOC Principle: Anomaly alone does NOT confirm an attack. Likely a benign traffic spike, backup stream, or novel protocol."
+    ],
+    "limitations": [
+      "Analysis limited to 78 pre-extracted statistical flow metrics; payload inspection not available in flow records.",
+      "Isolation Forest provides unsupervised density estimation; it does not indicate malicious intent on its own."
+    ],
+    "recommended_next_steps": [
+      "Cross-reference timestamp against scheduled maintenance windows, backups, or batch syncs.",
+      "Evaluate whether destination host recently deployed new services or protocols.",
+      "Maintain telemetry surveillance on source IP without immediate blocking to prevent false positives."
+    ],
+    "timestamp": "2026-10-20T22:48:12.081204",
+    "created_at": "2026-10-20T22:48:12.081204"
+  },
+  {
+    "investigation_id": "a6c154f8-45af-59bb-b94d-847d201aa46d",
+    "event_id": "a7875fb2-38ba-48f1-b5ef-29f7ccb5d08c",
+    "threat_category": "Confirmed Attack",
+    "severity": "HIGH",
+    "investigation_status": "COMPLETED",
+    "summary": "INVESTIGATION VERIFIED ACTIVE THREAT: Dual confirmation across supervised attack signature and statistical baseline outlier detection. Supporting evidence indicates anomalous flow metrics.",
+    "findings_by_agent": {
+      "network_evidence": [
+        "Flow velocity is moderate to low: 99.8436 pkts/sec."
+      ],
+      "anomaly_explanation": [
+        "Statistical deviation confirmed: flow characteristics diverge from benign training baseline.",
+        "Significant outlier score (-0.3792): deep isolation depth in tree forest."
+      ],
+      "alert_correlation": [
+        "No multi-agent incident was generated (single agent triggered or below correlation threshold).",
+        "Dual Agreement: Supervised signature match and statistical outlier detection align on threat."
+      ]
+    },
+    "supporting_evidence": {
+      "network_facts": {
+        "dst_port": 445.0,
+        "protocol": 6.0,
+        "flow_duration_us": 90141.0,
+        "tot_fwd_pkts": 5.0,
+        "tot_bwd_pkts": 4.0,
+        "flow_pkts_s": 99.84357839,
+        "flow_byts_s": 6046.083358
+      },
+      "anomaly_facts": {
+        "anomaly_prediction": "Anomalous",
+        "raw_isolation_forest_score": -0.379245,
+        "severity": "HIGH"
+      },
+      "incident_facts": {
+        "network_prediction": "Infilteration",
+        "anomaly_prediction": "Anomalous",
+        "has_correlated_incident": false,
+        "threat_category": "Confirmed Attack",
+        "threat_severity": "HIGH"
+      }
+    },
+    "conflicting_signals": [],
+    "reasoning": [
+      "Supervised Random Forest classified signature as 'Infilteration' with confidence 80.00%.",
+      "Negative isolation scores below -0.30 reflect rare multi-dimensional feature combinations.",
+      "Unsupervised model detected atypical metric distribution compared to learned normal traffic.",
+      "High confidence in malicious activity; no conflicting signals detected."
+    ],
+    "limitations": [
+      "Analysis limited to 78 pre-extracted statistical flow metrics; payload inspection not available in flow records.",
+      "Isolation Forest provides unsupervised density estimation; it does not indicate malicious intent on its own."
+    ],
+    "recommended_next_steps": [
+      "Isolate affected source host endpoint or block destination IP at perimeter firewall.",
+      "Collect endpoint host artifact dumps and volatile memory for process tree analysis.",
+      "Initiate SOC incident response runbook for confirmed infiltration/intrusion."
+    ],
+    "timestamp": "2026-10-20T22:48:12.382661",
+    "created_at": "2026-10-20T22:48:12.382661"
+  },
+  {
+    "investigation_id": "3dffc872-5bf7-51fe-b4ac-6d706d90a3e9",
+    "event_id": "33617ad9-315e-4b48-9b43-2e72d5f9c44a",
+    "threat_category": "Confirmed Attack",
+    "severity": "HIGH",
+    "investigation_status": "COMPLETED",
+    "summary": "INVESTIGATION VERIFIED ACTIVE THREAT: Dual confirmation across supervised attack signature and statistical baseline outlier detection. Supporting evidence indicates anomalous flow metrics.",
+    "findings_by_agent": {
+      "network_evidence": [
+        "Traffic targeted dynamic/ephemeral high port (Dst Port 53400.0).",
+        "High flow velocity observed: 66666.67 pkts/sec (potential flood or scan burst)."
+      ],
+      "anomaly_explanation": [
+        "Statistical deviation confirmed: flow characteristics diverge from benign training baseline.",
+        "Significant outlier score (-0.3646): deep isolation depth in tree forest."
+      ],
+      "alert_correlation": [
+        "No multi-agent incident was generated (single agent triggered or below correlation threshold).",
+        "Dual Agreement: Supervised signature match and statistical outlier detection align on threat."
+      ]
+    },
+    "supporting_evidence": {
+      "network_facts": {
+        "dst_port": 53400.0,
+        "protocol": 6.0,
+        "flow_duration_us": 30.0,
+        "tot_fwd_pkts": 1.0,
+        "tot_bwd_pkts": 1.0,
+        "flow_pkts_s": 66666.66667,
+        "flow_byts_s": 0.0
+      },
+      "anomaly_facts": {
+        "anomaly_prediction": "Anomalous",
+        "raw_isolation_forest_score": -0.364596,
+        "severity": "HIGH"
+      },
+      "incident_facts": {
+        "network_prediction": "Infilteration",
+        "anomaly_prediction": "Anomalous",
+        "has_correlated_incident": false,
+        "threat_category": "Confirmed Attack",
+        "threat_severity": "HIGH"
+      }
+    },
+    "conflicting_signals": [],
+    "reasoning": [
+      "High packet rate exceeds standard baseline interactive sessions.",
+      "Supervised Random Forest classified signature as 'Infilteration' with confidence 93.00%.",
+      "Negative isolation scores below -0.30 reflect rare multi-dimensional feature combinations.",
+      "Unsupervised model detected atypical metric distribution compared to learned normal traffic.",
+      "High confidence in malicious activity; no conflicting signals detected."
+    ],
+    "limitations": [
+      "Analysis limited to 78 pre-extracted statistical flow metrics; payload inspection not available in flow records.",
+      "Isolation Forest provides unsupervised density estimation; it does not indicate malicious intent on its own."
+    ],
+    "recommended_next_steps": [
+      "Isolate affected source host endpoint or block destination IP at perimeter firewall.",
+      "Collect endpoint host artifact dumps and volatile memory for process tree analysis.",
+      "Initiate SOC incident response runbook for confirmed infiltration/intrusion."
+    ],
+    "timestamp": "2026-10-20T22:55:15.446779",
+    "created_at": "2026-10-20T22:55:15.446779"
+  },
+  {
+    "investigation_id": "41541dad-b55a-5745-9cb2-07fa54312783",
+    "event_id": "4dfe8775-fb4a-48d5-8887-2dc89ebfed2b",
+    "threat_category": "Suspicious Anomaly",
+    "severity": "MEDIUM",
+    "investigation_status": "REQUIRES_TIER2",
+    "summary": "INVESTIGATION FLAGGED STATISTICAL OUTLIER: Flow exhibited unusual volume or timing distribution, but supervised detection classified signature as Benign. Anomaly alone does NOT confirm malicious intent.",
+    "findings_by_agent": {
+      "network_evidence": [
+        "Destination port is 0, commonly observed in ICMP or non-standard protocol encapsulations.",
+        "Flow velocity is moderate to low: 0.0328 pkts/sec.",
+        "Unidirectional flow detected: forward packets transmitted with zero backward responses."
+      ],
+      "anomaly_explanation": [
+        "Statistical deviation confirmed: flow characteristics diverge from benign training baseline.",
+        "Significant outlier score (-0.5108): deep isolation depth in tree forest.",
+        "Unusually long flow duration: 61.0 seconds, contributing to outlier profile."
+      ],
+      "alert_correlation": [
+        "No multi-agent incident was generated (single agent triggered or below correlation threshold)."
+      ]
+    },
+    "supporting_evidence": {
+      "network_facts": {
+        "dst_port": 0.0,
+        "protocol": 0.0,
+        "flow_duration_us": 61013174.0,
+        "tot_fwd_pkts": 2.0,
+        "tot_bwd_pkts": 0.0,
+        "flow_pkts_s": 0.032779806,
+        "flow_byts_s": 0.0
+      },
+      "anomaly_facts": {
+        "anomaly_prediction": "Anomalous",
+        "raw_isolation_forest_score": -0.510768,
+        "severity": "HIGH"
+      },
+      "incident_facts": {
+        "network_prediction": "Benign",
+        "anomaly_prediction": "Anomalous",
+        "has_correlated_incident": false,
+        "threat_category": "Suspicious Anomaly",
+        "threat_severity": "MEDIUM"
+      }
+    },
+    "conflicting_signals": [
+      "Supervised model classified signature as Benign, but unsupervised model flagged flow as statistically anomalous."
+    ],
+    "reasoning": [
+      "Unanswered connections often signify probing, dropped traffic, or SYN scanning.",
+      "Supervised Random Forest classified signature as 'Benign' with confidence 100.00%.",
+      "Negative isolation scores below -0.30 reflect rare multi-dimensional feature combinations.",
+      "Unsupervised model detected atypical metric distribution compared to learned normal traffic.",
+      "Critical SOC Principle: Anomaly alone does NOT confirm an attack. Likely a benign traffic spike, backup stream, or novel protocol."
+    ],
+    "limitations": [
+      "Analysis limited to 78 pre-extracted statistical flow metrics; payload inspection not available in flow records.",
+      "Isolation Forest provides unsupervised density estimation; it does not indicate malicious intent on its own."
+    ],
+    "recommended_next_steps": [
+      "Cross-reference timestamp against scheduled maintenance windows, backups, or batch syncs.",
+      "Evaluate whether destination host recently deployed new services or protocols.",
+      "Maintain telemetry surveillance on source IP without immediate blocking to prevent false positives."
+    ],
+    "timestamp": "2026-10-20T22:55:15.818379",
+    "created_at": "2026-10-20T22:55:15.818379"
+  },
+  {
+    "investigation_id": "a801e7e3-2984-50da-8e05-15dd21809b86",
+    "event_id": "ad985703-201f-4467-95c7-627367ccba5a",
+    "threat_category": "Suspicious Anomaly",
+    "severity": "MEDIUM",
+    "investigation_status": "REQUIRES_TIER2",
+    "summary": "INVESTIGATION FLAGGED STATISTICAL OUTLIER: Flow exhibited unusual volume or timing distribution, but supervised detection classified signature as Benign. Anomaly alone does NOT confirm malicious intent.",
+    "findings_by_agent": {
+      "network_evidence": [
+        "Destination port is 0, commonly observed in ICMP or non-standard protocol encapsulations.",
+        "Flow velocity is moderate to low: 0.0328 pkts/sec.",
+        "Unidirectional flow detected: forward packets transmitted with zero backward responses."
+      ],
+      "anomaly_explanation": [
+        "Statistical deviation confirmed: flow characteristics diverge from benign training baseline.",
+        "Significant outlier score (-0.5108): deep isolation depth in tree forest.",
+        "Unusually long flow duration: 61.0 seconds, contributing to outlier profile."
+      ],
+      "alert_correlation": [
+        "No multi-agent incident was generated (single agent triggered or below correlation threshold)."
+      ]
+    },
+    "supporting_evidence": {
+      "network_facts": {
+        "dst_port": 0.0,
+        "protocol": 0.0,
+        "flow_duration_us": 60997585.0,
+        "tot_fwd_pkts": 2.0,
+        "tot_bwd_pkts": 0.0,
+        "flow_pkts_s": 0.032788183,
+        "flow_byts_s": 0.0
+      },
+      "anomaly_facts": {
+        "anomaly_prediction": "Anomalous",
+        "raw_isolation_forest_score": -0.510768,
+        "severity": "HIGH"
+      },
+      "incident_facts": {
+        "network_prediction": "Benign",
+        "anomaly_prediction": "Anomalous",
+        "has_correlated_incident": false,
+        "threat_category": "Suspicious Anomaly",
+        "threat_severity": "MEDIUM"
+      }
+    },
+    "conflicting_signals": [
+      "Supervised model classified signature as Benign, but unsupervised model flagged flow as statistically anomalous."
+    ],
+    "reasoning": [
+      "Unanswered connections often signify probing, dropped traffic, or SYN scanning.",
+      "Supervised Random Forest classified signature as 'Benign' with confidence 100.00%.",
+      "Negative isolation scores below -0.30 reflect rare multi-dimensional feature combinations.",
+      "Unsupervised model detected atypical metric distribution compared to learned normal traffic.",
+      "Critical SOC Principle: Anomaly alone does NOT confirm an attack. Likely a benign traffic spike, backup stream, or novel protocol."
+    ],
+    "limitations": [
+      "Analysis limited to 78 pre-extracted statistical flow metrics; payload inspection not available in flow records.",
+      "Isolation Forest provides unsupervised density estimation; it does not indicate malicious intent on its own."
+    ],
+    "recommended_next_steps": [
+      "Cross-reference timestamp against scheduled maintenance windows, backups, or batch syncs.",
+      "Evaluate whether destination host recently deployed new services or protocols.",
+      "Maintain telemetry surveillance on source IP without immediate blocking to prevent false positives."
+    ],
+    "timestamp": "2026-10-20T22:55:16.151550",
+    "created_at": "2026-10-20T22:55:16.151550"
+  },
+  {
+    "investigation_id": "d4d6b7fd-2414-536d-9ba9-22b3248806e5",
+    "event_id": "309ec7ef-f06a-486c-9121-a7251f9c878b",
+    "threat_category": "Confirmed Attack",
+    "severity": "HIGH",
+    "investigation_status": "COMPLETED",
+    "summary": "INVESTIGATION VERIFIED ACTIVE THREAT: Dual confirmation across supervised attack signature and statistical baseline outlier detection. Supporting evidence indicates anomalous flow metrics.",
+    "findings_by_agent": {
+      "network_evidence": [
+        "Traffic targeted common web service port (Dst Port 443.0).",
+        "High flow velocity observed: 15306.12 pkts/sec (potential flood or scan burst).",
+        "Significant TCP flags present: SYN=1.0.",
+        "Unidirectional flow detected: forward packets transmitted with zero backward responses."
+      ],
+      "anomaly_explanation": [
+        "Statistical deviation confirmed: flow characteristics diverge from benign training baseline.",
+        "Significant outlier score (-0.3692): deep isolation depth in tree forest."
+      ],
+      "alert_correlation": [
+        "No multi-agent incident was generated (single agent triggered or below correlation threshold).",
+        "Dual Agreement: Supervised signature match and statistical outlier detection align on threat."
+      ]
+    },
+    "supporting_evidence": {
+      "network_facts": {
+        "dst_port": 443.0,
+        "protocol": 6.0,
+        "flow_duration_us": 196.0,
+        "tot_fwd_pkts": 3.0,
+        "tot_bwd_pkts": 0.0,
+        "flow_pkts_s": 15306.12245,
+        "flow_byts_s": 392857.1429,
+        "flags_observed": "SYN=1.0"
+      },
+      "anomaly_facts": {
+        "anomaly_prediction": "Anomalous",
+        "raw_isolation_forest_score": -0.369248,
+        "severity": "HIGH"
+      },
+      "incident_facts": {
+        "network_prediction": "Infilteration",
+        "anomaly_prediction": "Anomalous",
+        "has_correlated_incident": false,
+        "threat_category": "Confirmed Attack",
+        "threat_severity": "HIGH"
+      }
+    },
+    "conflicting_signals": [],
+    "reasoning": [
+      "High packet rate exceeds standard baseline interactive sessions.",
+      "Unanswered connections often signify probing, dropped traffic, or SYN scanning.",
+      "Supervised Random Forest classified signature as 'Infilteration' with confidence 87.29%.",
+      "Negative isolation scores below -0.30 reflect rare multi-dimensional feature combinations.",
+      "Unsupervised model detected atypical metric distribution compared to learned normal traffic.",
+      "High confidence in malicious activity; no conflicting signals detected."
+    ],
+    "limitations": [
+      "Analysis limited to 78 pre-extracted statistical flow metrics; payload inspection not available in flow records.",
+      "Isolation Forest provides unsupervised density estimation; it does not indicate malicious intent on its own."
+    ],
+    "recommended_next_steps": [
+      "Isolate affected source host endpoint or block destination IP at perimeter firewall.",
+      "Collect endpoint host artifact dumps and volatile memory for process tree analysis.",
+      "Initiate SOC incident response runbook for confirmed infiltration/intrusion."
+    ],
+    "timestamp": "2026-10-20T22:55:16.546153",
+    "created_at": "2026-10-20T22:55:16.546153"
+  },
+  {
+    "investigation_id": "36ebc6df-a845-5db6-b1ff-41a9f95a54bf",
+    "event_id": "63dce8fe-b675-4c28-9717-d23c9aece06b",
+    "threat_category": "Suspicious Anomaly",
+    "severity": "MEDIUM",
+    "investigation_status": "REQUIRES_TIER2",
+    "summary": "INVESTIGATION FLAGGED STATISTICAL OUTLIER: Flow exhibited unusual volume or timing distribution, but supervised detection classified signature as Benign. Anomaly alone does NOT confirm malicious intent.",
+    "findings_by_agent": {
+      "network_evidence": [
+        "Flow velocity is moderate to low: 0.0985 pkts/sec.",
+        "Unidirectional flow detected: forward packets transmitted with zero backward responses."
+      ],
+      "anomaly_explanation": [
+        "Statistical deviation confirmed: flow characteristics diverge from benign training baseline.",
+        "Significant outlier score (-0.6005): deep isolation depth in tree forest.",
+        "Unusually long flow duration: 91.4 seconds, contributing to outlier profile."
+      ],
+      "alert_correlation": [
+        "No multi-agent incident was generated (single agent triggered or below correlation threshold)."
+      ]
+    },
+    "supporting_evidence": {
+      "network_facts": {
+        "dst_port": 67.0,
+        "protocol": 17.0,
+        "flow_duration_us": 91370920.0,
+        "tot_fwd_pkts": 9.0,
+        "tot_bwd_pkts": 0.0,
+        "flow_pkts_s": 0.09849961,
+        "flow_byts_s": 29.54988305
+      },
+      "anomaly_facts": {
+        "anomaly_prediction": "Anomalous",
+        "raw_isolation_forest_score": -0.60052,
+        "severity": "HIGH"
+      },
+      "incident_facts": {
+        "network_prediction": "Benign",
+        "anomaly_prediction": "Anomalous",
+        "has_correlated_incident": false,
+        "threat_category": "Suspicious Anomaly",
+        "threat_severity": "MEDIUM"
+      }
+    },
+    "conflicting_signals": [
+      "Supervised model classified signature as Benign, but unsupervised model flagged flow as statistically anomalous."
+    ],
+    "reasoning": [
+      "Unanswered connections often signify probing, dropped traffic, or SYN scanning.",
+      "Supervised Random Forest classified signature as 'Benign' with confidence 100.00%.",
+      "Negative isolation scores below -0.30 reflect rare multi-dimensional feature combinations.",
+      "Unsupervised model detected atypical metric distribution compared to learned normal traffic.",
+      "Critical SOC Principle: Anomaly alone does NOT confirm an attack. Likely a benign traffic spike, backup stream, or novel protocol."
+    ],
+    "limitations": [
+      "Analysis limited to 78 pre-extracted statistical flow metrics; payload inspection not available in flow records.",
+      "Isolation Forest provides unsupervised density estimation; it does not indicate malicious intent on its own."
+    ],
+    "recommended_next_steps": [
+      "Cross-reference timestamp against scheduled maintenance windows, backups, or batch syncs.",
+      "Evaluate whether destination host recently deployed new services or protocols.",
+      "Maintain telemetry surveillance on source IP without immediate blocking to prevent false positives."
+    ],
+    "timestamp": "2026-10-20T22:55:16.911275",
+    "created_at": "2026-10-20T22:55:16.911275"
+  },
+  {
+    "investigation_id": "4e869498-40a3-5a59-a8f4-3d1452916924",
+    "event_id": "32e545d5-3588-4b57-ab8a-96a2d1e081f1",
+    "threat_category": "Suspicious Anomaly",
+    "severity": "MEDIUM",
+    "investigation_status": "REQUIRES_TIER2",
+    "summary": "INVESTIGATION FLAGGED STATISTICAL OUTLIER: Flow exhibited unusual volume or timing distribution, but supervised detection classified signature as Benign. Anomaly alone does NOT confirm malicious intent.",
+    "findings_by_agent": {
+      "network_evidence": [
+        "Destination port is 0, commonly observed in ICMP or non-standard protocol encapsulations.",
+        "Flow velocity is moderate to low: 0.0328 pkts/sec.",
+        "Unidirectional flow detected: forward packets transmitted with zero backward responses."
+      ],
+      "anomaly_explanation": [
+        "Statistical deviation confirmed: flow characteristics diverge from benign training baseline.",
+        "Significant outlier score (-0.5108): deep isolation depth in tree forest.",
+        "Unusually long flow duration: 61.0 seconds, contributing to outlier profile."
+      ],
+      "alert_correlation": [
+        "No multi-agent incident was generated (single agent triggered or below correlation threshold)."
+      ]
+    },
+    "supporting_evidence": {
+      "network_facts": {
+        "dst_port": 0.0,
+        "protocol": 0.0,
+        "flow_duration_us": 61013174.0,
+        "tot_fwd_pkts": 2.0,
+        "tot_bwd_pkts": 0.0,
+        "flow_pkts_s": 0.032779806,
+        "flow_byts_s": 0.0
+      },
+      "anomaly_facts": {
+        "anomaly_prediction": "Anomalous",
+        "raw_isolation_forest_score": -0.510768,
+        "severity": "HIGH"
+      },
+      "incident_facts": {
+        "network_prediction": "Benign",
+        "anomaly_prediction": "Anomalous",
+        "has_correlated_incident": false,
+        "threat_category": "Suspicious Anomaly",
+        "threat_severity": "MEDIUM"
+      }
+    },
+    "conflicting_signals": [
+      "Supervised model classified signature as Benign, but unsupervised model flagged flow as statistically anomalous."
+    ],
+    "reasoning": [
+      "Unanswered connections often signify probing, dropped traffic, or SYN scanning.",
+      "Supervised Random Forest classified signature as 'Benign' with confidence 100.00%.",
+      "Negative isolation scores below -0.30 reflect rare multi-dimensional feature combinations.",
+      "Unsupervised model detected atypical metric distribution compared to learned normal traffic.",
+      "Critical SOC Principle: Anomaly alone does NOT confirm an attack. Likely a benign traffic spike, backup stream, or novel protocol."
+    ],
+    "limitations": [
+      "Analysis limited to 78 pre-extracted statistical flow metrics; payload inspection not available in flow records.",
+      "Isolation Forest provides unsupervised density estimation; it does not indicate malicious intent on its own."
+    ],
+    "recommended_next_steps": [
+      "Cross-reference timestamp against scheduled maintenance windows, backups, or batch syncs.",
+      "Evaluate whether destination host recently deployed new services or protocols.",
+      "Maintain telemetry surveillance on source IP without immediate blocking to prevent false positives."
+    ],
+    "timestamp": "2026-10-20T23:03:42.148776",
+    "created_at": "2026-10-20T23:03:42.148776"
+  },
+  {
+    "investigation_id": "c4716edf-ab53-52cb-a334-952e8526a55a",
+    "event_id": "079bdd85-a502-4d2b-b090-f2b633ceef10",
+    "threat_category": "Suspicious Anomaly",
+    "severity": "MEDIUM",
+    "investigation_status": "REQUIRES_TIER2",
+    "summary": "INVESTIGATION FLAGGED STATISTICAL OUTLIER: Flow exhibited unusual volume or timing distribution, but supervised detection classified signature as Benign. Anomaly alone does NOT confirm malicious intent.",
+    "findings_by_agent": {
+      "network_evidence": [
+        "Flow velocity is moderate to low: 0.0985 pkts/sec.",
+        "Unidirectional flow detected: forward packets transmitted with zero backward responses."
+      ],
+      "anomaly_explanation": [
+        "Statistical deviation confirmed: flow characteristics diverge from benign training baseline.",
+        "Significant outlier score (-0.6005): deep isolation depth in tree forest.",
+        "Unusually long flow duration: 91.4 seconds, contributing to outlier profile."
+      ],
+      "alert_correlation": [
+        "No multi-agent incident was generated (single agent triggered or below correlation threshold)."
+      ]
+    },
+    "supporting_evidence": {
+      "network_facts": {
+        "dst_port": 67.0,
+        "protocol": 17.0,
+        "flow_duration_us": 91370920.0,
+        "tot_fwd_pkts": 9.0,
+        "tot_bwd_pkts": 0.0,
+        "flow_pkts_s": 0.09849961,
+        "flow_byts_s": 29.54988305
+      },
+      "anomaly_facts": {
+        "anomaly_prediction": "Anomalous",
+        "raw_isolation_forest_score": -0.60052,
+        "severity": "HIGH"
+      },
+      "incident_facts": {
+        "network_prediction": "Benign",
+        "anomaly_prediction": "Anomalous",
+        "has_correlated_incident": false,
+        "threat_category": "Suspicious Anomaly",
+        "threat_severity": "MEDIUM"
+      }
+    },
+    "conflicting_signals": [
+      "Supervised model classified signature as Benign, but unsupervised model flagged flow as statistically anomalous."
+    ],
+    "reasoning": [
+      "Unanswered connections often signify probing, dropped traffic, or SYN scanning.",
+      "Supervised Random Forest classified signature as 'Benign' with confidence 100.00%.",
+      "Negative isolation scores below -0.30 reflect rare multi-dimensional feature combinations.",
+      "Unsupervised model detected atypical metric distribution compared to learned normal traffic.",
+      "Critical SOC Principle: Anomaly alone does NOT confirm an attack. Likely a benign traffic spike, backup stream, or novel protocol."
+    ],
+    "limitations": [
+      "Analysis limited to 78 pre-extracted statistical flow metrics; payload inspection not available in flow records.",
+      "Isolation Forest provides unsupervised density estimation; it does not indicate malicious intent on its own."
+    ],
+    "recommended_next_steps": [
+      "Cross-reference timestamp against scheduled maintenance windows, backups, or batch syncs.",
+      "Evaluate whether destination host recently deployed new services or protocols.",
+      "Maintain telemetry surveillance on source IP without immediate blocking to prevent false positives."
+    ],
+    "timestamp": "2026-10-20T23:03:42.503027",
+    "created_at": "2026-10-20T23:03:42.503027"
+  },
+  {
+    "investigation_id": "09a0f459-7abe-54fd-a06b-afa2f1a2b04d",
+    "event_id": "0ff89935-25d6-4112-b19b-49c1432f196c",
+    "threat_category": "Confirmed Attack",
+    "severity": "HIGH",
+    "investigation_status": "COMPLETED",
+    "summary": "INVESTIGATION VERIFIED ACTIVE THREAT: Dual confirmation across supervised attack signature and statistical baseline outlier detection. Supporting evidence indicates anomalous flow metrics.",
+    "findings_by_agent": {
+      "network_evidence": [
+        "Traffic targeted dynamic/ephemeral high port (Dst Port 49437.0).",
+        "High flow velocity observed: 76923.08 pkts/sec (potential flood or scan burst).",
+        "Unidirectional flow detected: forward packets transmitted with zero backward responses."
+      ],
+      "anomaly_explanation": [
+        "Statistical deviation confirmed: flow characteristics diverge from benign training baseline.",
+        "Significant outlier score (-0.3456): deep isolation depth in tree forest."
+      ],
+      "alert_correlation": [
+        "No multi-agent incident was generated (single agent triggered or below correlation threshold).",
+        "Dual Agreement: Supervised signature match and statistical outlier detection align on threat."
+      ]
+    },
+    "supporting_evidence": {
+      "network_facts": {
+        "dst_port": 49437.0,
+        "protocol": 6.0,
+        "flow_duration_us": 26.0,
+        "tot_fwd_pkts": 2.0,
+        "tot_bwd_pkts": 0.0,
+        "flow_pkts_s": 76923.07692,
+        "flow_byts_s": 0.0
+      },
+      "anomaly_facts": {
+        "anomaly_prediction": "Anomalous",
+        "raw_isolation_forest_score": -0.345649,
+        "severity": "HIGH"
+      },
+      "incident_facts": {
+        "network_prediction": "Infilteration",
+        "anomaly_prediction": "Anomalous",
+        "has_correlated_incident": false,
+        "threat_category": "Confirmed Attack",
+        "threat_severity": "HIGH"
+      }
+    },
+    "conflicting_signals": [],
+    "reasoning": [
+      "High packet rate exceeds standard baseline interactive sessions.",
+      "Unanswered connections often signify probing, dropped traffic, or SYN scanning.",
+      "Supervised Random Forest classified signature as 'Infilteration' with confidence 88.00%.",
+      "Negative isolation scores below -0.30 reflect rare multi-dimensional feature combinations.",
+      "Unsupervised model detected atypical metric distribution compared to learned normal traffic.",
+      "High confidence in malicious activity; no conflicting signals detected."
+    ],
+    "limitations": [
+      "Analysis limited to 78 pre-extracted statistical flow metrics; payload inspection not available in flow records.",
+      "Isolation Forest provides unsupervised density estimation; it does not indicate malicious intent on its own."
+    ],
+    "recommended_next_steps": [
+      "Isolate affected source host endpoint or block destination IP at perimeter firewall.",
+      "Collect endpoint host artifact dumps and volatile memory for process tree analysis.",
+      "Initiate SOC incident response runbook for confirmed infiltration/intrusion."
+    ],
+    "timestamp": "2026-10-20T23:03:42.878082",
+    "created_at": "2026-10-20T23:03:42.878082"
+  },
+  {
+    "investigation_id": "4e2bcafc-6cff-594b-bf3d-cade862af328",
+    "event_id": "afe56f2c-fc08-40b4-9779-0d13edc40772",
+    "threat_category": "Suspicious Anomaly",
+    "severity": "MEDIUM",
+    "investigation_status": "REQUIRES_TIER2",
+    "summary": "INVESTIGATION FLAGGED STATISTICAL OUTLIER: Flow exhibited unusual volume or timing distribution, but supervised detection classified signature as Benign. Anomaly alone does NOT confirm malicious intent.",
+    "findings_by_agent": {
+      "network_evidence": [
+        "Destination port is 0, commonly observed in ICMP or non-standard protocol encapsulations.",
+        "Flow velocity is moderate to low: 0.0328 pkts/sec.",
+        "Unidirectional flow detected: forward packets transmitted with zero backward responses."
+      ],
+      "anomaly_explanation": [
+        "Statistical deviation confirmed: flow characteristics diverge from benign training baseline.",
+        "Significant outlier score (-0.5108): deep isolation depth in tree forest.",
+        "Unusually long flow duration: 61.0 seconds, contributing to outlier profile."
+      ],
+      "alert_correlation": [
+        "No multi-agent incident was generated (single agent triggered or below correlation threshold)."
+      ]
+    },
+    "supporting_evidence": {
+      "network_facts": {
+        "dst_port": 0.0,
+        "protocol": 0.0,
+        "flow_duration_us": 61013174.0,
+        "tot_fwd_pkts": 2.0,
+        "tot_bwd_pkts": 0.0,
+        "flow_pkts_s": 0.032779806,
+        "flow_byts_s": 0.0
+      },
+      "anomaly_facts": {
+        "anomaly_prediction": "Anomalous",
+        "raw_isolation_forest_score": -0.510768,
+        "severity": "HIGH"
+      },
+      "incident_facts": {
+        "network_prediction": "Benign",
+        "anomaly_prediction": "Anomalous",
+        "has_correlated_incident": false,
+        "threat_category": "Suspicious Anomaly",
+        "threat_severity": "MEDIUM"
+      }
+    },
+    "conflicting_signals": [
+      "Supervised model classified signature as Benign, but unsupervised model flagged flow as statistically anomalous."
+    ],
+    "reasoning": [
+      "Unanswered connections often signify probing, dropped traffic, or SYN scanning.",
+      "Supervised Random Forest classified signature as 'Benign' with confidence 100.00%.",
+      "Negative isolation scores below -0.30 reflect rare multi-dimensional feature combinations.",
+      "Unsupervised model detected atypical metric distribution compared to learned normal traffic.",
+      "Critical SOC Principle: Anomaly alone does NOT confirm an attack. Likely a benign traffic spike, backup stream, or novel protocol."
+    ],
+    "limitations": [
+      "Analysis limited to 78 pre-extracted statistical flow metrics; payload inspection not available in flow records.",
+      "Isolation Forest provides unsupervised density estimation; it does not indicate malicious intent on its own."
+    ],
+    "recommended_next_steps": [
+      "Cross-reference timestamp against scheduled maintenance windows, backups, or batch syncs.",
+      "Evaluate whether destination host recently deployed new services or protocols.",
+      "Maintain telemetry surveillance on source IP without immediate blocking to prevent false positives."
+    ],
+    "timestamp": "2026-10-20T23:03:48.254070",
+    "created_at": "2026-10-20T23:03:48.254070"
+  },
+  {
+    "investigation_id": "d148cc9e-bc62-5fc5-9809-bffda51be683",
+    "event_id": "09282aee-6b19-4993-86f5-b74e943a418d",
+    "threat_category": "Suspicious Anomaly",
+    "severity": "MEDIUM",
+    "investigation_status": "REQUIRES_TIER2",
+    "summary": "INVESTIGATION FLAGGED STATISTICAL OUTLIER: Flow exhibited unusual volume or timing distribution, but supervised detection classified signature as Benign. Anomaly alone does NOT confirm malicious intent.",
+    "findings_by_agent": {
+      "network_evidence": [
+        "Flow velocity is moderate to low: 0.0985 pkts/sec.",
+        "Unidirectional flow detected: forward packets transmitted with zero backward responses."
+      ],
+      "anomaly_explanation": [
+        "Statistical deviation confirmed: flow characteristics diverge from benign training baseline.",
+        "Significant outlier score (-0.6005): deep isolation depth in tree forest.",
+        "Unusually long flow duration: 91.4 seconds, contributing to outlier profile."
+      ],
+      "alert_correlation": [
+        "No multi-agent incident was generated (single agent triggered or below correlation threshold)."
+      ]
+    },
+    "supporting_evidence": {
+      "network_facts": {
+        "dst_port": 67.0,
+        "protocol": 17.0,
+        "flow_duration_us": 91370920.0,
+        "tot_fwd_pkts": 9.0,
+        "tot_bwd_pkts": 0.0,
+        "flow_pkts_s": 0.09849961,
+        "flow_byts_s": 29.54988305
+      },
+      "anomaly_facts": {
+        "anomaly_prediction": "Anomalous",
+        "raw_isolation_forest_score": -0.60052,
+        "severity": "HIGH"
+      },
+      "incident_facts": {
+        "network_prediction": "Benign",
+        "anomaly_prediction": "Anomalous",
+        "has_correlated_incident": false,
+        "threat_category": "Suspicious Anomaly",
+        "threat_severity": "MEDIUM"
+      }
+    },
+    "conflicting_signals": [
+      "Supervised model classified signature as Benign, but unsupervised model flagged flow as statistically anomalous."
+    ],
+    "reasoning": [
+      "Unanswered connections often signify probing, dropped traffic, or SYN scanning.",
+      "Supervised Random Forest classified signature as 'Benign' with confidence 100.00%.",
+      "Negative isolation scores below -0.30 reflect rare multi-dimensional feature combinations.",
+      "Unsupervised model detected atypical metric distribution compared to learned normal traffic.",
+      "Critical SOC Principle: Anomaly alone does NOT confirm an attack. Likely a benign traffic spike, backup stream, or novel protocol."
+    ],
+    "limitations": [
+      "Analysis limited to 78 pre-extracted statistical flow metrics; payload inspection not available in flow records.",
+      "Isolation Forest provides unsupervised density estimation; it does not indicate malicious intent on its own."
+    ],
+    "recommended_next_steps": [
+      "Cross-reference timestamp against scheduled maintenance windows, backups, or batch syncs.",
+      "Evaluate whether destination host recently deployed new services or protocols.",
+      "Maintain telemetry surveillance on source IP without immediate blocking to prevent false positives."
+    ],
+    "timestamp": "2026-10-20T23:03:48.532188",
+    "created_at": "2026-10-20T23:03:48.532188"
+  },
+  {
+    "investigation_id": "67101b5b-8c49-5df0-a110-e2ca0fbb23b7",
+    "event_id": "ab80af57-94ce-40f0-b53a-2877faf0d3d1",
+    "threat_category": "Confirmed Attack",
+    "severity": "HIGH",
+    "investigation_status": "COMPLETED",
+    "summary": "INVESTIGATION VERIFIED ACTIVE THREAT: Dual confirmation across supervised attack signature and statistical baseline outlier detection. Supporting evidence indicates anomalous flow metrics.",
+    "findings_by_agent": {
+      "network_evidence": [
+        "Traffic targeted dynamic/ephemeral high port (Dst Port 49437.0).",
+        "High flow velocity observed: 76923.08 pkts/sec (potential flood or scan burst).",
+        "Unidirectional flow detected: forward packets transmitted with zero backward responses."
+      ],
+      "anomaly_explanation": [
+        "Statistical deviation confirmed: flow characteristics diverge from benign training baseline.",
+        "Significant outlier score (-0.3456): deep isolation depth in tree forest."
+      ],
+      "alert_correlation": [
+        "No multi-agent incident was generated (single agent triggered or below correlation threshold).",
+        "Dual Agreement: Supervised signature match and statistical outlier detection align on threat."
+      ]
+    },
+    "supporting_evidence": {
+      "network_facts": {
+        "dst_port": 49437.0,
+        "protocol": 6.0,
+        "flow_duration_us": 26.0,
+        "tot_fwd_pkts": 2.0,
+        "tot_bwd_pkts": 0.0,
+        "flow_pkts_s": 76923.07692,
+        "flow_byts_s": 0.0
+      },
+      "anomaly_facts": {
+        "anomaly_prediction": "Anomalous",
+        "raw_isolation_forest_score": -0.345649,
+        "severity": "HIGH"
+      },
+      "incident_facts": {
+        "network_prediction": "Infilteration",
+        "anomaly_prediction": "Anomalous",
+        "has_correlated_incident": false,
+        "threat_category": "Confirmed Attack",
+        "threat_severity": "HIGH"
+      }
+    },
+    "conflicting_signals": [],
+    "reasoning": [
+      "High packet rate exceeds standard baseline interactive sessions.",
+      "Unanswered connections often signify probing, dropped traffic, or SYN scanning.",
+      "Supervised Random Forest classified signature as 'Infilteration' with confidence 88.00%.",
+      "Negative isolation scores below -0.30 reflect rare multi-dimensional feature combinations.",
+      "Unsupervised model detected atypical metric distribution compared to learned normal traffic.",
+      "High confidence in malicious activity; no conflicting signals detected."
+    ],
+    "limitations": [
+      "Analysis limited to 78 pre-extracted statistical flow metrics; payload inspection not available in flow records.",
+      "Isolation Forest provides unsupervised density estimation; it does not indicate malicious intent on its own."
+    ],
+    "recommended_next_steps": [
+      "Isolate affected source host endpoint or block destination IP at perimeter firewall.",
+      "Collect endpoint host artifact dumps and volatile memory for process tree analysis.",
+      "Initiate SOC incident response runbook for confirmed infiltration/intrusion."
+    ],
+    "timestamp": "2026-10-20T23:03:48.928669",
+    "created_at": "2026-10-20T23:03:48.928669"
+  }
+]

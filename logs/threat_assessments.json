@@ -1,0 +1,1058 @@
+[
+  {
+    "assessment_id": "24fb691e-c361-5af0-9dd2-6e1cb966b10f",
+    "event_id": "19d8b6cb-1037-483c-98b7-2155e60c77b9",
+    "category": "Suspicious Anomaly",
+    "severity": "MEDIUM",
+    "network_prediction": "Benign",
+    "anomaly_prediction": "Anomalous",
+    "network_confidence": 0.65,
+    "anomaly_score": -0.556737,
+    "predictions": {
+      "network": "Benign",
+      "anomaly": "Anomalous"
+    },
+    "scores": {
+      "network_confidence": 0.65,
+      "anomaly_score": -0.556737
+    },
+    "explanation": "Unsupervised anomaly detection flagged statistically unusual flow behavior (anomaly_score: -0.5567), but supervised model classified traffic as Benign (confidence: 65.00%). Anomaly alone does NOT indicate a confirmed attack; likely represents benign traffic spike, novel protocol activity, or zero-day behavior warranting tier-2 SOC investigation.",
+    "actual_label": "Benign",
+    "timestamp": "2026-10-20T22:01:18.730830",
+    "created_at": "2026-10-20T22:01:18.730830"
+  },
+  {
+    "assessment_id": "6612d6b6-c071-5ede-b47b-5860ef940a9e",
+    "event_id": "efdc21b9-43ec-49eb-b4ff-27a78daa8c68",
+    "category": "Suspicious Anomaly",
+    "severity": "MEDIUM",
+    "network_prediction": "Benign",
+    "anomaly_prediction": "Anomalous",
+    "network_confidence": 1.0,
+    "anomaly_score": -0.510768,
+    "predictions": {
+      "network": "Benign",
+      "anomaly": "Anomalous"
+    },
+    "scores": {
+      "network_confidence": 1.0,
+      "anomaly_score": -0.510768
+    },
+    "explanation": "Unsupervised anomaly detection flagged statistically unusual flow behavior (anomaly_score: -0.5108), but supervised model classified traffic as Benign (confidence: 100.00%). Anomaly alone does NOT indicate a confirmed attack; likely represents benign traffic spike, novel protocol activity, or zero-day behavior warranting tier-2 SOC investigation.",
+    "actual_label": "Benign",
+    "timestamp": "2026-10-20T22:01:19.200369",
+    "created_at": "2026-10-20T22:01:19.200369"
+  },
+  {
+    "assessment_id": "8cd8e159-7dcc-546c-9775-17210aaaa9d5",
+    "event_id": "b01c39e9-f5f3-4400-90ac-fd1473236730",
+    "category": "Suspicious Anomaly",
+    "severity": "MEDIUM",
+    "network_prediction": "Benign",
+    "anomaly_prediction": "Anomalous",
+    "network_confidence": 0.93,
+    "anomaly_score": -0.595062,
+    "predictions": {
+      "network": "Benign",
+      "anomaly": "Anomalous"
+    },
+    "scores": {
+      "network_confidence": 0.93,
+      "anomaly_score": -0.595062
+    },
+    "explanation": "Unsupervised anomaly detection flagged statistically unusual flow behavior (anomaly_score: -0.5951), but supervised model classified traffic as Benign (confidence: 93.00%). Anomaly alone does NOT indicate a confirmed attack; likely represents benign traffic spike, novel protocol activity, or zero-day behavior warranting tier-2 SOC investigation.",
+    "actual_label": "Benign",
+    "timestamp": "2026-10-20T22:01:19.618544",
+    "created_at": "2026-10-20T22:01:19.618544"
+  },
+  {
+    "assessment_id": "e92c057c-a24f-558a-96d7-3eb80719a911",
+    "event_id": "203e2bcb-e534-4851-802d-587cd89d198b",
+    "category": "Suspicious Anomaly",
+    "severity": "MEDIUM",
+    "network_prediction": "Benign",
+    "anomaly_prediction": "Anomalous",
+    "network_confidence": 0.65,
+    "anomaly_score": -0.556737,
+    "predictions": {
+      "network": "Benign",
+      "anomaly": "Anomalous"
+    },
+    "scores": {
+      "network_confidence": 0.65,
+      "anomaly_score": -0.556737
+    },
+    "explanation": "Unsupervised anomaly detection flagged statistically unusual flow behavior (anomaly_score: -0.5567), but supervised model classified traffic as Benign (confidence: 65.00%). Anomaly alone does NOT indicate a confirmed attack; likely represents benign traffic spike, novel protocol activity, or zero-day behavior warranting tier-2 SOC investigation.",
+    "actual_label": "Benign",
+    "timestamp": "2026-10-20T22:01:20.136597",
+    "created_at": "2026-10-20T22:01:20.136597"
+  },
+  {
+    "assessment_id": "f2b28836-57ea-5c41-b1ce-4c1b5faa3ba9",
+    "event_id": "e6abb769-9652-4cc7-a916-a6d4d0e077fb",
+    "category": "Suspicious Anomaly",
+    "severity": "MEDIUM",
+    "network_prediction": "Benign",
+    "anomaly_prediction": "Anomalous",
+    "network_confidence": 1.0,
+    "anomaly_score": -0.510768,
+    "predictions": {
+      "network": "Benign",
+      "anomaly": "Anomalous"
+    },
+    "scores": {
+      "network_confidence": 1.0,
+      "anomaly_score": -0.510768
+    },
+    "explanation": "Unsupervised anomaly detection flagged statistically unusual flow behavior (anomaly_score: -0.5108), but supervised model classified traffic as Benign (confidence: 100.00%). Anomaly alone does NOT indicate a confirmed attack; likely represents benign traffic spike, novel protocol activity, or zero-day behavior warranting tier-2 SOC investigation.",
+    "actual_label": "Benign",
+    "timestamp": "2026-10-20T22:01:20.611831",
+    "created_at": "2026-10-20T22:01:20.611831"
+  },
+  {
+    "assessment_id": "23d7c071-0014-5846-929a-18e671bd2f76",
+    "event_id": "18695a68-9bf1-462b-83d8-3d526e858a8e",
+    "category": "Suspicious Anomaly",
+    "severity": "MEDIUM",
+    "network_prediction": "Benign",
+    "anomaly_prediction": "Anomalous",
+    "network_confidence": 0.93,
+    "anomaly_score": -0.595062,
+    "predictions": {
+      "network": "Benign",
+      "anomaly": "Anomalous"
+    },
+    "scores": {
+      "network_confidence": 0.93,
+      "anomaly_score": -0.595062
+    },
+    "explanation": "Unsupervised anomaly detection flagged statistically unusual flow behavior (anomaly_score: -0.5951), but supervised model classified traffic as Benign (confidence: 93.00%). Anomaly alone does NOT indicate a confirmed attack; likely represents benign traffic spike, novel protocol activity, or zero-day behavior warranting tier-2 SOC investigation.",
+    "actual_label": "Benign",
+    "timestamp": "2026-10-20T22:01:21.091919",
+    "created_at": "2026-10-20T22:01:21.091919"
+  },
+  {
+    "assessment_id": "9c9cb77c-9ab2-514d-898c-1565ad5d51a6",
+    "event_id": "6d3a3d2e-d72d-498e-a2e9-301626f7d449",
+    "category": "Suspicious Anomaly",
+    "severity": "MEDIUM",
+    "network_prediction": "Benign",
+    "anomaly_prediction": "Anomalous",
+    "network_confidence": 1.0,
+    "anomaly_score": -0.510768,
+    "predictions": {
+      "network": "Benign",
+      "anomaly": "Anomalous"
+    },
+    "scores": {
+      "network_confidence": 1.0,
+      "anomaly_score": -0.510768
+    },
+    "explanation": "Unsupervised anomaly detection flagged statistically unusual flow behavior (anomaly_score: -0.5108), but supervised model classified traffic as Benign (confidence: 100.00%). Anomaly alone does NOT indicate a confirmed attack; likely represents benign traffic spike, novel protocol activity, or zero-day behavior warranting tier-2 SOC investigation.",
+    "actual_label": "Benign",
+    "timestamp": "2026-10-20T22:01:21.561301",
+    "created_at": "2026-10-20T22:01:21.561301"
+  },
+  {
+    "assessment_id": "dac931f0-ce20-54d2-9c25-a6db75efeabe",
+    "event_id": "c90ca80e-0599-4e2f-a1e6-3ec440fb9a45",
+    "category": "Suspicious Anomaly",
+    "severity": "MEDIUM",
+    "network_prediction": "Benign",
+    "anomaly_prediction": "Anomalous",
+    "network_confidence": 1.0,
+    "anomaly_score": -0.535429,
+    "predictions": {
+      "network": "Benign",
+      "anomaly": "Anomalous"
+    },
+    "scores": {
+      "network_confidence": 1.0,
+      "anomaly_score": -0.535429
+    },
+    "explanation": "Unsupervised anomaly detection flagged statistically unusual flow behavior (anomaly_score: -0.5354), but supervised model classified traffic as Benign (confidence: 100.00%). Anomaly alone does NOT indicate a confirmed attack; likely represents benign traffic spike, novel protocol activity, or zero-day behavior warranting tier-2 SOC investigation.",
+    "actual_label": "Benign",
+    "timestamp": "2026-10-20T22:01:22.032383",
+    "created_at": "2026-10-20T22:01:22.032383"
+  },
+  {
+    "assessment_id": "4ece0844-083b-521a-81a3-73e5e515f1e4",
+    "event_id": "7f573f50-5972-4e6f-98ef-eb3c41723125",
+    "category": "Suspicious Anomaly",
+    "severity": "MEDIUM",
+    "network_prediction": "Benign",
+    "anomaly_prediction": "Anomalous",
+    "network_confidence": 1.0,
+    "anomaly_score": -0.521108,
+    "predictions": {
+      "network": "Benign",
+      "anomaly": "Anomalous"
+    },
+    "scores": {
+      "network_confidence": 1.0,
+      "anomaly_score": -0.521108
+    },
+    "explanation": "Unsupervised anomaly detection flagged statistically unusual flow behavior (anomaly_score: -0.5211), but supervised model classified traffic as Benign (confidence: 100.00%). Anomaly alone does NOT indicate a confirmed attack; likely represents benign traffic spike, novel protocol activity, or zero-day behavior warranting tier-2 SOC investigation.",
+    "actual_label": "Benign",
+    "timestamp": "2026-10-20T22:01:22.530786",
+    "created_at": "2026-10-20T22:01:22.530786"
+  },
+  {
+    "assessment_id": "c936b4ac-401f-503f-a965-7e8b4c283455",
+    "event_id": "c3a84e26-bbd1-42cd-8c6c-ec4eef2d5b8d",
+    "category": "Suspicious Anomaly",
+    "severity": "MEDIUM",
+    "network_prediction": "Benign",
+    "anomaly_prediction": "Anomalous",
+    "network_confidence": 1.0,
+    "anomaly_score": -0.510768,
+    "predictions": {
+      "network": "Benign",
+      "anomaly": "Anomalous"
+    },
+    "scores": {
+      "network_confidence": 1.0,
+      "anomaly_score": -0.510768
+    },
+    "explanation": "Unsupervised anomaly detection flagged statistically unusual flow behavior (anomaly_score: -0.5108), but supervised model classified traffic as Benign (confidence: 100.00%). Anomaly alone does NOT indicate a confirmed attack; likely represents benign traffic spike, novel protocol activity, or zero-day behavior warranting tier-2 SOC investigation.",
+    "actual_label": "Benign",
+    "timestamp": "2026-10-20T22:47:44.608308",
+    "created_at": "2026-10-20T22:47:44.608308"
+  },
+  {
+    "assessment_id": "519f328b-815c-554b-ae2c-e520da00b61c",
+    "event_id": "e1b2d68e-ad83-4037-a09f-c353dd8b9dc0",
+    "category": "Suspicious Anomaly",
+    "severity": "MEDIUM",
+    "network_prediction": "Benign",
+    "anomaly_prediction": "Anomalous",
+    "network_confidence": 1.0,
+    "anomaly_score": -0.60052,
+    "predictions": {
+      "network": "Benign",
+      "anomaly": "Anomalous"
+    },
+    "scores": {
+      "network_confidence": 1.0,
+      "anomaly_score": -0.60052
+    },
+    "explanation": "Unsupervised anomaly detection flagged statistically unusual flow behavior (anomaly_score: -0.6005), but supervised model classified traffic as Benign (confidence: 100.00%). Anomaly alone does NOT indicate a confirmed attack; likely represents benign traffic spike, novel protocol activity, or zero-day behavior warranting tier-2 SOC investigation.",
+    "actual_label": "Benign",
+    "timestamp": "2026-10-20T22:47:44.917785",
+    "created_at": "2026-10-20T22:47:44.917785"
+  },
+  {
+    "assessment_id": "99c7a4e4-c76d-58a5-a753-085cb88fd570",
+    "event_id": "9b15256e-5f48-43c0-af12-3622d41c60e3",
+    "category": "Confirmed Attack",
+    "severity": "HIGH",
+    "network_prediction": "Infilteration",
+    "anomaly_prediction": "Anomalous",
+    "network_confidence": 0.88,
+    "anomaly_score": -0.345649,
+    "predictions": {
+      "network": "Infilteration",
+      "anomaly": "Anomalous"
+    },
+    "scores": {
+      "network_confidence": 0.88,
+      "anomaly_score": -0.345649
+    },
+    "explanation": "Dual confirmation of security threat. Supervised network detection identified known attack signature (Infilteration, confidence: 88.00%), and unsupervised anomaly detection flagged significant deviation from baseline (anomaly_score: -0.3456). High confidence in active intrusion.",
+    "actual_label": "Infilteration",
+    "timestamp": "2026-10-20T22:47:45.291520",
+    "created_at": "2026-10-20T22:47:45.291520"
+  },
+  {
+    "assessment_id": "87ea4811-1551-5cbd-a6f2-b8355f037cf7",
+    "event_id": "c4dcfb7c-7a76-4152-88fa-27a0968a47f9",
+    "category": "Suspicious Anomaly",
+    "severity": "MEDIUM",
+    "network_prediction": "Benign",
+    "anomaly_prediction": "Anomalous",
+    "network_confidence": 1.0,
+    "anomaly_score": -0.510768,
+    "predictions": {
+      "network": "Benign",
+      "anomaly": "Anomalous"
+    },
+    "scores": {
+      "network_confidence": 1.0,
+      "anomaly_score": -0.510768
+    },
+    "explanation": "Unsupervised anomaly detection flagged statistically unusual flow behavior (anomaly_score: -0.5108), but supervised model classified traffic as Benign (confidence: 100.00%). Anomaly alone does NOT indicate a confirmed attack; likely represents benign traffic spike, novel protocol activity, or zero-day behavior warranting tier-2 SOC investigation.",
+    "actual_label": "Benign",
+    "timestamp": "2026-10-20T22:47:50.423925",
+    "created_at": "2026-10-20T22:47:50.423925"
+  },
+  {
+    "assessment_id": "923ff18d-9cb1-5c88-af4e-e88c2a72a0a0",
+    "event_id": "4f06b2dc-29b3-41ad-a021-cce88fdc76f4",
+    "category": "Suspicious Anomaly",
+    "severity": "MEDIUM",
+    "network_prediction": "Benign",
+    "anomaly_prediction": "Anomalous",
+    "network_confidence": 1.0,
+    "anomaly_score": -0.60052,
+    "predictions": {
+      "network": "Benign",
+      "anomaly": "Anomalous"
+    },
+    "scores": {
+      "network_confidence": 1.0,
+      "anomaly_score": -0.60052
+    },
+    "explanation": "Unsupervised anomaly detection flagged statistically unusual flow behavior (anomaly_score: -0.6005), but supervised model classified traffic as Benign (confidence: 100.00%). Anomaly alone does NOT indicate a confirmed attack; likely represents benign traffic spike, novel protocol activity, or zero-day behavior warranting tier-2 SOC investigation.",
+    "actual_label": "Benign",
+    "timestamp": "2026-10-20T22:47:50.688732",
+    "created_at": "2026-10-20T22:47:50.688732"
+  },
+  {
+    "assessment_id": "d114eb2d-898c-5756-af96-329a32c9af37",
+    "event_id": "4108736e-c223-4d60-82a7-1b25c9bda284",
+    "category": "Confirmed Attack",
+    "severity": "HIGH",
+    "network_prediction": "Infilteration",
+    "anomaly_prediction": "Anomalous",
+    "network_confidence": 0.88,
+    "anomaly_score": -0.345649,
+    "predictions": {
+      "network": "Infilteration",
+      "anomaly": "Anomalous"
+    },
+    "scores": {
+      "network_confidence": 0.88,
+      "anomaly_score": -0.345649
+    },
+    "explanation": "Dual confirmation of security threat. Supervised network detection identified known attack signature (Infilteration, confidence: 88.00%), and unsupervised anomaly detection flagged significant deviation from baseline (anomaly_score: -0.3456). High confidence in active intrusion.",
+    "actual_label": "Infilteration",
+    "timestamp": "2026-10-20T22:47:51.047018",
+    "created_at": "2026-10-20T22:47:51.047018"
+  },
+  {
+    "assessment_id": "0e3c8078-56dd-5e31-9136-741766a8e8de",
+    "event_id": "c6b4986e-8820-46b0-b983-6a15dc489531",
+    "category": "Confirmed Attack",
+    "severity": "HIGH",
+    "network_prediction": "Infilteration",
+    "anomaly_prediction": "Anomalous",
+    "network_confidence": 0.86,
+    "anomaly_score": -0.395717,
+    "predictions": {
+      "network": "Infilteration",
+      "anomaly": "Anomalous"
+    },
+    "scores": {
+      "network_confidence": 0.86,
+      "anomaly_score": -0.395717
+    },
+    "explanation": "Dual confirmation of security threat. Supervised network detection identified known attack signature (Infilteration, confidence: 86.00%), and unsupervised anomaly detection flagged significant deviation from baseline (anomaly_score: -0.3957). High confidence in active intrusion.",
+    "actual_label": "Infilteration",
+    "timestamp": "2026-10-20T22:48:06.563967",
+    "created_at": "2026-10-20T22:48:06.563967"
+  },
+  {
+    "assessment_id": "870b8018-ff37-5a0d-8a4a-bfd0ea63df0f",
+    "event_id": "7b94debe-01d9-4abd-9d97-36abb2a44601",
+    "category": "Suspicious Anomaly",
+    "severity": "MEDIUM",
+    "network_prediction": "Benign",
+    "anomaly_prediction": "Anomalous",
+    "network_confidence": 0.78,
+    "anomaly_score": -0.410451,
+    "predictions": {
+      "network": "Benign",
+      "anomaly": "Anomalous"
+    },
+    "scores": {
+      "network_confidence": 0.78,
+      "anomaly_score": -0.410451
+    },
+    "explanation": "Unsupervised anomaly detection flagged statistically unusual flow behavior (anomaly_score: -0.4105), but supervised model classified traffic as Benign (confidence: 78.00%). Anomaly alone does NOT indicate a confirmed attack; likely represents benign traffic spike, novel protocol activity, or zero-day behavior warranting tier-2 SOC investigation.",
+    "actual_label": "Infilteration",
+    "timestamp": "2026-10-20T22:48:06.814394",
+    "created_at": "2026-10-20T22:48:06.814394"
+  },
+  {
+    "assessment_id": "b795ec55-3409-5d45-a920-e2e3a9b027d4",
+    "event_id": "3fdd536e-ee9f-4c0b-9c7b-f742d11505b7",
+    "category": "Confirmed Attack",
+    "severity": "HIGH",
+    "network_prediction": "Infilteration",
+    "anomaly_prediction": "Anomalous",
+    "network_confidence": 0.95,
+    "anomaly_score": -0.344827,
+    "predictions": {
+      "network": "Infilteration",
+      "anomaly": "Anomalous"
+    },
+    "scores": {
+      "network_confidence": 0.95,
+      "anomaly_score": -0.344827
+    },
+    "explanation": "Dual confirmation of security threat. Supervised network detection identified known attack signature (Infilteration, confidence: 95.00%), and unsupervised anomaly detection flagged significant deviation from baseline (anomaly_score: -0.3448). High confidence in active intrusion.",
+    "actual_label": "Infilteration",
+    "timestamp": "2026-10-20T22:48:07.066638",
+    "created_at": "2026-10-20T22:48:07.066638"
+  },
+  {
+    "assessment_id": "aaf1081a-2c5c-53fa-b54e-c848492174a1",
+    "event_id": "da15102e-fa2e-418e-abd2-ed35ac44537a",
+    "category": "Suspicious Anomaly",
+    "severity": "MEDIUM",
+    "network_prediction": "Benign",
+    "anomaly_prediction": "Anomalous",
+    "network_confidence": 1.0,
+    "anomaly_score": -0.380753,
+    "predictions": {
+      "network": "Benign",
+      "anomaly": "Anomalous"
+    },
+    "scores": {
+      "network_confidence": 1.0,
+      "anomaly_score": -0.380753
+    },
+    "explanation": "Unsupervised anomaly detection flagged statistically unusual flow behavior (anomaly_score: -0.3808), but supervised model classified traffic as Benign (confidence: 100.00%). Anomaly alone does NOT indicate a confirmed attack; likely represents benign traffic spike, novel protocol activity, or zero-day behavior warranting tier-2 SOC investigation.",
+    "actual_label": "Benign",
+    "timestamp": "2026-10-20T22:48:07.341794",
+    "created_at": "2026-10-20T22:48:07.341794"
+  },
+  {
+    "assessment_id": "690a7fe4-d2ae-56d5-8d26-db26676ef10c",
+    "event_id": "878ecb63-d9f6-4557-bab4-f85f118e91b9",
+    "category": "Confirmed Attack",
+    "severity": "HIGH",
+    "network_prediction": "Infilteration",
+    "anomaly_prediction": "Anomalous",
+    "network_confidence": 0.86,
+    "anomaly_score": -0.372053,
+    "predictions": {
+      "network": "Infilteration",
+      "anomaly": "Anomalous"
+    },
+    "scores": {
+      "network_confidence": 0.86,
+      "anomaly_score": -0.372053
+    },
+    "explanation": "Dual confirmation of security threat. Supervised network detection identified known attack signature (Infilteration, confidence: 86.00%), and unsupervised anomaly detection flagged significant deviation from baseline (anomaly_score: -0.3721). High confidence in active intrusion.",
+    "actual_label": "Infilteration",
+    "timestamp": "2026-10-20T22:48:07.604419",
+    "created_at": "2026-10-20T22:48:07.604419"
+  },
+  {
+    "assessment_id": "1ee01359-2916-5b8e-bdd5-89bdd86ec0f4",
+    "event_id": "f6ad108a-2067-4e09-9210-8f4ba013450a",
+    "category": "Suspicious Anomaly",
+    "severity": "MEDIUM",
+    "network_prediction": "Benign",
+    "anomaly_prediction": "Anomalous",
+    "network_confidence": 1.0,
+    "anomaly_score": -0.60052,
+    "predictions": {
+      "network": "Benign",
+      "anomaly": "Anomalous"
+    },
+    "scores": {
+      "network_confidence": 1.0,
+      "anomaly_score": -0.60052
+    },
+    "explanation": "Unsupervised anomaly detection flagged statistically unusual flow behavior (anomaly_score: -0.6005), but supervised model classified traffic as Benign (confidence: 100.00%). Anomaly alone does NOT indicate a confirmed attack; likely represents benign traffic spike, novel protocol activity, or zero-day behavior warranting tier-2 SOC investigation.",
+    "actual_label": "Benign",
+    "timestamp": "2026-10-20T22:48:07.840636",
+    "created_at": "2026-10-20T22:48:07.840636"
+  },
+  {
+    "assessment_id": "c4bc50d4-c9e2-5ebe-be55-0ca39b3fe1a3",
+    "event_id": "72305124-a2d5-493c-af93-160a6ab613cb",
+    "category": "Confirmed Attack",
+    "severity": "HIGH",
+    "network_prediction": "Infilteration",
+    "anomaly_prediction": "Anomalous",
+    "network_confidence": 0.7255,
+    "anomaly_score": -0.369802,
+    "predictions": {
+      "network": "Infilteration",
+      "anomaly": "Anomalous"
+    },
+    "scores": {
+      "network_confidence": 0.7255,
+      "anomaly_score": -0.369802
+    },
+    "explanation": "Dual confirmation of security threat. Supervised network detection identified known attack signature (Infilteration, confidence: 72.55%), and unsupervised anomaly detection flagged significant deviation from baseline (anomaly_score: -0.3698). High confidence in active intrusion.",
+    "actual_label": "Infilteration",
+    "timestamp": "2026-10-20T22:48:08.136701",
+    "created_at": "2026-10-20T22:48:08.136701"
+  },
+  {
+    "assessment_id": "2b263f4c-4f5f-5cdf-9b0a-ba4aab7da5da",
+    "event_id": "b75fb1ca-f23c-43b5-a87a-4eac68e0f1e8",
+    "category": "Suspicious Anomaly",
+    "severity": "MEDIUM",
+    "network_prediction": "Benign",
+    "anomaly_prediction": "Anomalous",
+    "network_confidence": 1.0,
+    "anomaly_score": -0.535429,
+    "predictions": {
+      "network": "Benign",
+      "anomaly": "Anomalous"
+    },
+    "scores": {
+      "network_confidence": 1.0,
+      "anomaly_score": -0.535429
+    },
+    "explanation": "Unsupervised anomaly detection flagged statistically unusual flow behavior (anomaly_score: -0.5354), but supervised model classified traffic as Benign (confidence: 100.00%). Anomaly alone does NOT indicate a confirmed attack; likely represents benign traffic spike, novel protocol activity, or zero-day behavior warranting tier-2 SOC investigation.",
+    "actual_label": "Benign",
+    "timestamp": "2026-10-20T22:48:08.463684",
+    "created_at": "2026-10-20T22:48:08.463684"
+  },
+  {
+    "assessment_id": "f19b5b86-fbff-5f16-b709-dbbacc2c143d",
+    "event_id": "239fca81-4260-4d1e-8071-0e428ce354b7",
+    "category": "Confirmed Attack",
+    "severity": "HIGH",
+    "network_prediction": "Infilteration",
+    "anomaly_prediction": "Anomalous",
+    "network_confidence": 0.92,
+    "anomaly_score": -0.344827,
+    "predictions": {
+      "network": "Infilteration",
+      "anomaly": "Anomalous"
+    },
+    "scores": {
+      "network_confidence": 0.92,
+      "anomaly_score": -0.344827
+    },
+    "explanation": "Dual confirmation of security threat. Supervised network detection identified known attack signature (Infilteration, confidence: 92.00%), and unsupervised anomaly detection flagged significant deviation from baseline (anomaly_score: -0.3448). High confidence in active intrusion.",
+    "actual_label": "Infilteration",
+    "timestamp": "2026-10-20T22:48:08.719209",
+    "created_at": "2026-10-20T22:48:08.719209"
+  },
+  {
+    "assessment_id": "b631baf6-94b1-5442-81e5-6bd7f5e886d7",
+    "event_id": "c09305a4-6bdd-4792-961b-f4673d846f55",
+    "category": "Suspicious Anomaly",
+    "severity": "MEDIUM",
+    "network_prediction": "Benign",
+    "anomaly_prediction": "Anomalous",
+    "network_confidence": 1.0,
+    "anomaly_score": -0.510768,
+    "predictions": {
+      "network": "Benign",
+      "anomaly": "Anomalous"
+    },
+    "scores": {
+      "network_confidence": 1.0,
+      "anomaly_score": -0.510768
+    },
+    "explanation": "Unsupervised anomaly detection flagged statistically unusual flow behavior (anomaly_score: -0.5108), but supervised model classified traffic as Benign (confidence: 100.00%). Anomaly alone does NOT indicate a confirmed attack; likely represents benign traffic spike, novel protocol activity, or zero-day behavior warranting tier-2 SOC investigation.",
+    "actual_label": "Benign",
+    "timestamp": "2026-10-20T22:48:09.017811",
+    "created_at": "2026-10-20T22:48:09.017811"
+  },
+  {
+    "assessment_id": "9d97e59d-a8bd-518c-9e61-fd7622ace324",
+    "event_id": "510e7015-6aff-43b7-b7a4-79df5b18bc65",
+    "category": "Confirmed Attack",
+    "severity": "HIGH",
+    "network_prediction": "Infilteration",
+    "anomaly_prediction": "Anomalous",
+    "network_confidence": 0.86,
+    "anomaly_score": -0.405726,
+    "predictions": {
+      "network": "Infilteration",
+      "anomaly": "Anomalous"
+    },
+    "scores": {
+      "network_confidence": 0.86,
+      "anomaly_score": -0.405726
+    },
+    "explanation": "Dual confirmation of security threat. Supervised network detection identified known attack signature (Infilteration, confidence: 86.00%), and unsupervised anomaly detection flagged significant deviation from baseline (anomaly_score: -0.4057). High confidence in active intrusion.",
+    "actual_label": "Infilteration",
+    "timestamp": "2026-10-20T22:48:09.422638",
+    "created_at": "2026-10-20T22:48:09.422638"
+  },
+  {
+    "assessment_id": "88ecdd5c-5ac4-5f07-bf00-7dccb63d8027",
+    "event_id": "1f27079e-a67f-4153-9907-20359a920a29",
+    "category": "Suspicious Anomaly",
+    "severity": "MEDIUM",
+    "network_prediction": "Benign",
+    "anomaly_prediction": "Anomalous",
+    "network_confidence": 1.0,
+    "anomaly_score": -0.510768,
+    "predictions": {
+      "network": "Benign",
+      "anomaly": "Anomalous"
+    },
+    "scores": {
+      "network_confidence": 1.0,
+      "anomaly_score": -0.510768
+    },
+    "explanation": "Unsupervised anomaly detection flagged statistically unusual flow behavior (anomaly_score: -0.5108), but supervised model classified traffic as Benign (confidence: 100.00%). Anomaly alone does NOT indicate a confirmed attack; likely represents benign traffic spike, novel protocol activity, or zero-day behavior warranting tier-2 SOC investigation.",
+    "actual_label": "Benign",
+    "timestamp": "2026-10-20T22:48:09.792662",
+    "created_at": "2026-10-20T22:48:09.792662"
+  },
+  {
+    "assessment_id": "fe6afc60-2238-5e33-8eba-adac14802eba",
+    "event_id": "0f8bd9fc-3fe7-4548-8629-7ebfc74a0bab",
+    "category": "Suspicious Anomaly",
+    "severity": "MEDIUM",
+    "network_prediction": "Benign",
+    "anomaly_prediction": "Anomalous",
+    "network_confidence": 1.0,
+    "anomaly_score": -0.600317,
+    "predictions": {
+      "network": "Benign",
+      "anomaly": "Anomalous"
+    },
+    "scores": {
+      "network_confidence": 1.0,
+      "anomaly_score": -0.600317
+    },
+    "explanation": "Unsupervised anomaly detection flagged statistically unusual flow behavior (anomaly_score: -0.6003), but supervised model classified traffic as Benign (confidence: 100.00%). Anomaly alone does NOT indicate a confirmed attack; likely represents benign traffic spike, novel protocol activity, or zero-day behavior warranting tier-2 SOC investigation.",
+    "actual_label": "Benign",
+    "timestamp": "2026-10-20T22:48:10.107706",
+    "created_at": "2026-10-20T22:48:10.107706"
+  },
+  {
+    "assessment_id": "8e91a749-aedc-5cc1-84d6-b8ef2254f2bd",
+    "event_id": "f89d570c-0393-4214-92db-74f3bdc59eb2",
+    "category": "Suspicious Anomaly",
+    "severity": "MEDIUM",
+    "network_prediction": "Benign",
+    "anomaly_prediction": "Anomalous",
+    "network_confidence": 1.0,
+    "anomaly_score": -0.535429,
+    "predictions": {
+      "network": "Benign",
+      "anomaly": "Anomalous"
+    },
+    "scores": {
+      "network_confidence": 1.0,
+      "anomaly_score": -0.535429
+    },
+    "explanation": "Unsupervised anomaly detection flagged statistically unusual flow behavior (anomaly_score: -0.5354), but supervised model classified traffic as Benign (confidence: 100.00%). Anomaly alone does NOT indicate a confirmed attack; likely represents benign traffic spike, novel protocol activity, or zero-day behavior warranting tier-2 SOC investigation.",
+    "actual_label": "Benign",
+    "timestamp": "2026-10-20T22:48:10.464157",
+    "created_at": "2026-10-20T22:48:10.464157"
+  },
+  {
+    "assessment_id": "3b7ea1a6-210f-578d-b3d2-be2db1d9114d",
+    "event_id": "da3e6c8d-acd1-4fcd-b302-43429a6dd450",
+    "category": "Suspicious Anomaly",
+    "severity": "MEDIUM",
+    "network_prediction": "Benign",
+    "anomaly_prediction": "Anomalous",
+    "network_confidence": 1.0,
+    "anomaly_score": -0.380753,
+    "predictions": {
+      "network": "Benign",
+      "anomaly": "Anomalous"
+    },
+    "scores": {
+      "network_confidence": 1.0,
+      "anomaly_score": -0.380753
+    },
+    "explanation": "Unsupervised anomaly detection flagged statistically unusual flow behavior (anomaly_score: -0.3808), but supervised model classified traffic as Benign (confidence: 100.00%). Anomaly alone does NOT indicate a confirmed attack; likely represents benign traffic spike, novel protocol activity, or zero-day behavior warranting tier-2 SOC investigation.",
+    "actual_label": "Benign",
+    "timestamp": "2026-10-20T22:48:10.813168",
+    "created_at": "2026-10-20T22:48:10.813168"
+  },
+  {
+    "assessment_id": "bf648be8-ac69-5579-9973-f6cc292a2f1c",
+    "event_id": "ad3cc96e-2136-41ca-888a-7aa24ebcf39c",
+    "category": "Confirmed Attack",
+    "severity": "HIGH",
+    "network_prediction": "Infilteration",
+    "anomaly_prediction": "Anomalous",
+    "network_confidence": 0.88,
+    "anomaly_score": -0.369241,
+    "predictions": {
+      "network": "Infilteration",
+      "anomaly": "Anomalous"
+    },
+    "scores": {
+      "network_confidence": 0.88,
+      "anomaly_score": -0.369241
+    },
+    "explanation": "Dual confirmation of security threat. Supervised network detection identified known attack signature (Infilteration, confidence: 88.00%), and unsupervised anomaly detection flagged significant deviation from baseline (anomaly_score: -0.3692). High confidence in active intrusion.",
+    "actual_label": "Infilteration",
+    "timestamp": "2026-10-20T22:48:11.141271",
+    "created_at": "2026-10-20T22:48:11.141271"
+  },
+  {
+    "assessment_id": "3637eaa2-ab56-51b7-a6f0-de5ee65063f1",
+    "event_id": "d735eb0b-2805-4193-8421-0cfa1be33d77",
+    "category": "Suspicious Anomaly",
+    "severity": "MEDIUM",
+    "network_prediction": "Benign",
+    "anomaly_prediction": "Anomalous",
+    "network_confidence": 1.0,
+    "anomaly_score": -0.510768,
+    "predictions": {
+      "network": "Benign",
+      "anomaly": "Anomalous"
+    },
+    "scores": {
+      "network_confidence": 1.0,
+      "anomaly_score": -0.510768
+    },
+    "explanation": "Unsupervised anomaly detection flagged statistically unusual flow behavior (anomaly_score: -0.5108), but supervised model classified traffic as Benign (confidence: 100.00%). Anomaly alone does NOT indicate a confirmed attack; likely represents benign traffic spike, novel protocol activity, or zero-day behavior warranting tier-2 SOC investigation.",
+    "actual_label": "Benign",
+    "timestamp": "2026-10-20T22:48:11.410206",
+    "created_at": "2026-10-20T22:48:11.410206"
+  },
+  {
+    "assessment_id": "7270d003-04f7-5179-9543-177ef710b125",
+    "event_id": "f0d490de-724b-413c-92da-4d7d9d384a2a",
+    "category": "Suspicious Anomaly",
+    "severity": "MEDIUM",
+    "network_prediction": "Benign",
+    "anomaly_prediction": "Anomalous",
+    "network_confidence": 0.5,
+    "anomaly_score": -0.370776,
+    "predictions": {
+      "network": "Benign",
+      "anomaly": "Anomalous"
+    },
+    "scores": {
+      "network_confidence": 0.5,
+      "anomaly_score": -0.370776
+    },
+    "explanation": "Unsupervised anomaly detection flagged statistically unusual flow behavior (anomaly_score: -0.3708), but supervised model classified traffic as Benign (confidence: 50.00%). Anomaly alone does NOT indicate a confirmed attack; likely represents benign traffic spike, novel protocol activity, or zero-day behavior warranting tier-2 SOC investigation.",
+    "actual_label": "Infilteration",
+    "timestamp": "2026-10-20T22:48:11.722355",
+    "created_at": "2026-10-20T22:48:11.722355"
+  },
+  {
+    "assessment_id": "39277909-cc18-5e75-bf96-145cc9b2e0da",
+    "event_id": "f8335ac3-7b5c-4c1d-b712-71b8453b5fbd",
+    "category": "Suspicious Anomaly",
+    "severity": "MEDIUM",
+    "network_prediction": "Benign",
+    "anomaly_prediction": "Anomalous",
+    "network_confidence": 1.0,
+    "anomaly_score": -0.510768,
+    "predictions": {
+      "network": "Benign",
+      "anomaly": "Anomalous"
+    },
+    "scores": {
+      "network_confidence": 1.0,
+      "anomaly_score": -0.510768
+    },
+    "explanation": "Unsupervised anomaly detection flagged statistically unusual flow behavior (anomaly_score: -0.5108), but supervised model classified traffic as Benign (confidence: 100.00%). Anomaly alone does NOT indicate a confirmed attack; likely represents benign traffic spike, novel protocol activity, or zero-day behavior warranting tier-2 SOC investigation.",
+    "actual_label": "Benign",
+    "timestamp": "2026-10-20T22:48:12.048634",
+    "created_at": "2026-10-20T22:48:12.048634"
+  },
+  {
+    "assessment_id": "dbeefe05-3576-5a94-b9b6-495e24c14829",
+    "event_id": "a7875fb2-38ba-48f1-b5ef-29f7ccb5d08c",
+    "category": "Confirmed Attack",
+    "severity": "HIGH",
+    "network_prediction": "Infilteration",
+    "anomaly_prediction": "Anomalous",
+    "network_confidence": 0.8,
+    "anomaly_score": -0.379245,
+    "predictions": {
+      "network": "Infilteration",
+      "anomaly": "Anomalous"
+    },
+    "scores": {
+      "network_confidence": 0.8,
+      "anomaly_score": -0.379245
+    },
+    "explanation": "Dual confirmation of security threat. Supervised network detection identified known attack signature (Infilteration, confidence: 80.00%), and unsupervised anomaly detection flagged significant deviation from baseline (anomaly_score: -0.3792). High confidence in active intrusion.",
+    "actual_label": "Infilteration",
+    "timestamp": "2026-10-20T22:48:12.351355",
+    "created_at": "2026-10-20T22:48:12.351355"
+  },
+  {
+    "assessment_id": "3863a6f5-c04f-564e-a69b-7fb5d9443b5a",
+    "event_id": "ab8ef8f4-8c70-4f57-8cf7-140de6ec5f34",
+    "category": "Benign",
+    "severity": "LOW",
+    "network_prediction": "Benign",
+    "anomaly_prediction": "Normal",
+    "network_confidence": 0.65,
+    "anomaly_score": -0.336673,
+    "predictions": {
+      "network": "Benign",
+      "anomaly": "Normal"
+    },
+    "scores": {
+      "network_confidence": 0.65,
+      "anomaly_score": -0.336673
+    },
+    "explanation": "Traffic confirmed benign by both detection layers. Supervised classification: Benign (confidence: 65.00%); unsupervised anomaly detection: Normal (anomaly_score: -0.3367). Flow conforms to normal baseline.",
+    "actual_label": null,
+    "timestamp": "2026-10-20T22:48:12.657584",
+    "created_at": "2026-10-20T22:48:12.657584"
+  },
+  {
+    "assessment_id": "bd44332b-77ee-5556-8a65-8afc5b73782c",
+    "event_id": "93d6e17c-30a7-4e27-9ca2-2d6f370032c2",
+    "category": "Benign",
+    "severity": "LOW",
+    "network_prediction": "Benign",
+    "anomaly_prediction": "Normal",
+    "network_confidence": 0.65,
+    "anomaly_score": -0.336673,
+    "predictions": {
+      "network": "Benign",
+      "anomaly": "Normal"
+    },
+    "scores": {
+      "network_confidence": 0.65,
+      "anomaly_score": -0.336673
+    },
+    "explanation": "Traffic confirmed benign by both detection layers. Supervised classification: Benign (confidence: 65.00%); unsupervised anomaly detection: Normal (anomaly_score: -0.3367). Flow conforms to normal baseline.",
+    "actual_label": null,
+    "timestamp": "2026-10-20T22:48:12.943917",
+    "created_at": "2026-10-20T22:48:12.943917"
+  },
+  {
+    "assessment_id": "6c251fa9-adb5-5275-a10f-dfb5c25add66",
+    "event_id": "33617ad9-315e-4b48-9b43-2e72d5f9c44a",
+    "category": "Confirmed Attack",
+    "severity": "HIGH",
+    "network_prediction": "Infilteration",
+    "anomaly_prediction": "Anomalous",
+    "network_confidence": 0.93,
+    "anomaly_score": -0.364596,
+    "predictions": {
+      "network": "Infilteration",
+      "anomaly": "Anomalous"
+    },
+    "scores": {
+      "network_confidence": 0.93,
+      "anomaly_score": -0.364596
+    },
+    "explanation": "Dual confirmation of security threat. Supervised network detection identified known attack signature (Infilteration, confidence: 93.00%), and unsupervised anomaly detection flagged significant deviation from baseline (anomaly_score: -0.3646). High confidence in active intrusion.",
+    "actual_label": "Infilteration",
+    "timestamp": "2026-10-20T22:55:15.439946",
+    "created_at": "2026-10-20T22:55:15.439946"
+  },
+  {
+    "assessment_id": "7fc2e40f-ab34-5199-8d3f-4055c4f0dc67",
+    "event_id": "4dfe8775-fb4a-48d5-8887-2dc89ebfed2b",
+    "category": "Suspicious Anomaly",
+    "severity": "MEDIUM",
+    "network_prediction": "Benign",
+    "anomaly_prediction": "Anomalous",
+    "network_confidence": 1.0,
+    "anomaly_score": -0.510768,
+    "predictions": {
+      "network": "Benign",
+      "anomaly": "Anomalous"
+    },
+    "scores": {
+      "network_confidence": 1.0,
+      "anomaly_score": -0.510768
+    },
+    "explanation": "Unsupervised anomaly detection flagged statistically unusual flow behavior (anomaly_score: -0.5108), but supervised model classified traffic as Benign (confidence: 100.00%). Anomaly alone does NOT indicate a confirmed attack; likely represents benign traffic spike, novel protocol activity, or zero-day behavior warranting tier-2 SOC investigation.",
+    "actual_label": "Benign",
+    "timestamp": "2026-10-20T22:55:15.792432",
+    "created_at": "2026-10-20T22:55:15.792432"
+  },
+  {
+    "assessment_id": "b45d88a6-b336-588b-ae50-456c6ac9ba73",
+    "event_id": "ad985703-201f-4467-95c7-627367ccba5a",
+    "category": "Suspicious Anomaly",
+    "severity": "MEDIUM",
+    "network_prediction": "Benign",
+    "anomaly_prediction": "Anomalous",
+    "network_confidence": 1.0,
+    "anomaly_score": -0.510768,
+    "predictions": {
+      "network": "Benign",
+      "anomaly": "Anomalous"
+    },
+    "scores": {
+      "network_confidence": 1.0,
+      "anomaly_score": -0.510768
+    },
+    "explanation": "Unsupervised anomaly detection flagged statistically unusual flow behavior (anomaly_score: -0.5108), but supervised model classified traffic as Benign (confidence: 100.00%). Anomaly alone does NOT indicate a confirmed attack; likely represents benign traffic spike, novel protocol activity, or zero-day behavior warranting tier-2 SOC investigation.",
+    "actual_label": "Benign",
+    "timestamp": "2026-10-20T22:55:16.151550",
+    "created_at": "2026-10-20T22:55:16.151550"
+  },
+  {
+    "assessment_id": "117308b3-8b68-5d0a-9109-5a37e8c701f0",
+    "event_id": "309ec7ef-f06a-486c-9121-a7251f9c878b",
+    "category": "Confirmed Attack",
+    "severity": "HIGH",
+    "network_prediction": "Infilteration",
+    "anomaly_prediction": "Anomalous",
+    "network_confidence": 0.8729,
+    "anomaly_score": -0.369248,
+    "predictions": {
+      "network": "Infilteration",
+      "anomaly": "Anomalous"
+    },
+    "scores": {
+      "network_confidence": 0.8729,
+      "anomaly_score": -0.369248
+    },
+    "explanation": "Dual confirmation of security threat. Supervised network detection identified known attack signature (Infilteration, confidence: 87.29%), and unsupervised anomaly detection flagged significant deviation from baseline (anomaly_score: -0.3692). High confidence in active intrusion.",
+    "actual_label": "Infilteration",
+    "timestamp": "2026-10-20T22:55:16.516019",
+    "created_at": "2026-10-20T22:55:16.516019"
+  },
+  {
+    "assessment_id": "4f8167d6-2719-548a-b16d-ea8f63099254",
+    "event_id": "63dce8fe-b675-4c28-9717-d23c9aece06b",
+    "category": "Suspicious Anomaly",
+    "severity": "MEDIUM",
+    "network_prediction": "Benign",
+    "anomaly_prediction": "Anomalous",
+    "network_confidence": 1.0,
+    "anomaly_score": -0.60052,
+    "predictions": {
+      "network": "Benign",
+      "anomaly": "Anomalous"
+    },
+    "scores": {
+      "network_confidence": 1.0,
+      "anomaly_score": -0.60052
+    },
+    "explanation": "Unsupervised anomaly detection flagged statistically unusual flow behavior (anomaly_score: -0.6005), but supervised model classified traffic as Benign (confidence: 100.00%). Anomaly alone does NOT indicate a confirmed attack; likely represents benign traffic spike, novel protocol activity, or zero-day behavior warranting tier-2 SOC investigation.",
+    "actual_label": "Benign",
+    "timestamp": "2026-10-20T22:55:16.877088",
+    "created_at": "2026-10-20T22:55:16.877088"
+  },
+  {
+    "assessment_id": "87cf6b06-ab6c-52ff-a2d4-3a6e3fcf3ed9",
+    "event_id": "32e545d5-3588-4b57-ab8a-96a2d1e081f1",
+    "category": "Suspicious Anomaly",
+    "severity": "MEDIUM",
+    "network_prediction": "Benign",
+    "anomaly_prediction": "Anomalous",
+    "network_confidence": 1.0,
+    "anomaly_score": -0.510768,
+    "predictions": {
+      "network": "Benign",
+      "anomaly": "Anomalous"
+    },
+    "scores": {
+      "network_confidence": 1.0,
+      "anomaly_score": -0.510768
+    },
+    "explanation": "Unsupervised anomaly detection flagged statistically unusual flow behavior (anomaly_score: -0.5108), but supervised model classified traffic as Benign (confidence: 100.00%). Anomaly alone does NOT indicate a confirmed attack; likely represents benign traffic spike, novel protocol activity, or zero-day behavior warranting tier-2 SOC investigation.",
+    "actual_label": "Benign",
+    "timestamp": "2026-10-20T23:03:42.141633",
+    "created_at": "2026-10-20T23:03:42.141633"
+  },
+  {
+    "assessment_id": "00dd9d95-da0f-50e0-8ad5-228cdd1f697d",
+    "event_id": "079bdd85-a502-4d2b-b090-f2b633ceef10",
+    "category": "Suspicious Anomaly",
+    "severity": "MEDIUM",
+    "network_prediction": "Benign",
+    "anomaly_prediction": "Anomalous",
+    "network_confidence": 1.0,
+    "anomaly_score": -0.60052,
+    "predictions": {
+      "network": "Benign",
+      "anomaly": "Anomalous"
+    },
+    "scores": {
+      "network_confidence": 1.0,
+      "anomaly_score": -0.60052
+    },
+    "explanation": "Unsupervised anomaly detection flagged statistically unusual flow behavior (anomaly_score: -0.6005), but supervised model classified traffic as Benign (confidence: 100.00%). Anomaly alone does NOT indicate a confirmed attack; likely represents benign traffic spike, novel protocol activity, or zero-day behavior warranting tier-2 SOC investigation.",
+    "actual_label": "Benign",
+    "timestamp": "2026-10-20T23:03:42.474988",
+    "created_at": "2026-10-20T23:03:42.474988"
+  },
+  {
+    "assessment_id": "696a29c9-e8ba-5306-8c31-5082e70f781a",
+    "event_id": "0ff89935-25d6-4112-b19b-49c1432f196c",
+    "category": "Confirmed Attack",
+    "severity": "HIGH",
+    "network_prediction": "Infilteration",
+    "anomaly_prediction": "Anomalous",
+    "network_confidence": 0.88,
+    "anomaly_score": -0.345649,
+    "predictions": {
+      "network": "Infilteration",
+      "anomaly": "Anomalous"
+    },
+    "scores": {
+      "network_confidence": 0.88,
+      "anomaly_score": -0.345649
+    },
+    "explanation": "Dual confirmation of security threat. Supervised network detection identified known attack signature (Infilteration, confidence: 88.00%), and unsupervised anomaly detection flagged significant deviation from baseline (anomaly_score: -0.3456). High confidence in active intrusion.",
+    "actual_label": "Infilteration",
+    "timestamp": "2026-10-20T23:03:42.843147",
+    "created_at": "2026-10-20T23:03:42.843147"
+  },
+  {
+    "assessment_id": "34f3fcbc-122b-5ba9-a38b-8aaab49c4fa8",
+    "event_id": "afe56f2c-fc08-40b4-9779-0d13edc40772",
+    "category": "Suspicious Anomaly",
+    "severity": "MEDIUM",
+    "network_prediction": "Benign",
+    "anomaly_prediction": "Anomalous",
+    "network_confidence": 1.0,
+    "anomaly_score": -0.510768,
+    "predictions": {
+      "network": "Benign",
+      "anomaly": "Anomalous"
+    },
+    "scores": {
+      "network_confidence": 1.0,
+      "anomaly_score": -0.510768
+    },
+    "explanation": "Unsupervised anomaly detection flagged statistically unusual flow behavior (anomaly_score: -0.5108), but supervised model classified traffic as Benign (confidence: 100.00%). Anomaly alone does NOT indicate a confirmed attack; likely represents benign traffic spike, novel protocol activity, or zero-day behavior warranting tier-2 SOC investigation.",
+    "actual_label": "Benign",
+    "timestamp": "2026-10-20T23:03:48.254070",
+    "created_at": "2026-10-20T23:03:48.254070"
+  },
+  {
+    "assessment_id": "3f286c25-1d55-5291-84bf-c3c321be98c2",
+    "event_id": "09282aee-6b19-4993-86f5-b74e943a418d",
+    "category": "Suspicious Anomaly",
+    "severity": "MEDIUM",
+    "network_prediction": "Benign",
+    "anomaly_prediction": "Anomalous",
+    "network_confidence": 1.0,
+    "anomaly_score": -0.60052,
+    "predictions": {
+      "network": "Benign",
+      "anomaly": "Anomalous"
+    },
+    "scores": {
+      "network_confidence": 1.0,
+      "anomaly_score": -0.60052
+    },
+    "explanation": "Unsupervised anomaly detection flagged statistically unusual flow behavior (anomaly_score: -0.6005), but supervised model classified traffic as Benign (confidence: 100.00%). Anomaly alone does NOT indicate a confirmed attack; likely represents benign traffic spike, novel protocol activity, or zero-day behavior warranting tier-2 SOC investigation.",
+    "actual_label": "Benign",
+    "timestamp": "2026-10-20T23:03:48.500192",
+    "created_at": "2026-10-20T23:03:48.500192"
+  },
+  {
+    "assessment_id": "5b62a9eb-8a79-5248-a08c-4180420269a6",
+    "event_id": "ab80af57-94ce-40f0-b53a-2877faf0d3d1",
+    "category": "Confirmed Attack",
+    "severity": "HIGH",
+    "network_prediction": "Infilteration",
+    "anomaly_prediction": "Anomalous",
+    "network_confidence": 0.88,
+    "anomaly_score": -0.345649,
+    "predictions": {
+      "network": "Infilteration",
+      "anomaly": "Anomalous"
+    },
+    "scores": {
+      "network_confidence": 0.88,
+      "anomaly_score": -0.345649
+    },
+    "explanation": "Dual confirmation of security threat. Supervised network detection identified known attack signature (Infilteration, confidence: 88.00%), and unsupervised anomaly detection flagged significant deviation from baseline (anomaly_score: -0.3456). High confidence in active intrusion.",
+    "actual_label": "Infilteration",
+    "timestamp": "2026-10-20T23:03:48.896959",
+    "created_at": "2026-10-20T23:03:48.896959"
+  }
+]
