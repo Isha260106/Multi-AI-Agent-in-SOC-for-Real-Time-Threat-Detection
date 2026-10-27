@@ -14,7 +14,7 @@ import time
 import uuid
 
 # Project root
-PROJECT_ROOT = pathlib.Path(r"E:\multi-agent-soc")
+PROJECT_ROOT = pathlib.Path(__file__).resolve().parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from agents.alert_correlation.agent import AlertCorrelationAgent

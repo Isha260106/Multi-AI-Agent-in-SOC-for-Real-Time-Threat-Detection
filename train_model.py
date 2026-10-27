@@ -1,3 +1,4 @@
+import pathlib
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
@@ -5,10 +6,11 @@ from sklearn.metrics import classification_report, confusion_matrix, accuracy_sc
 import joblib
 
 # Dataset
-input_file = r"E:\multi-agent-soc\data\processed\cleaned_dataset.csv"
+_PROJECT_ROOT = pathlib.Path(__file__).resolve().parent
+input_file = _PROJECT_ROOT / "data" / "processed" / "cleaned_dataset.csv"
 
 # Model output
-model_file = r"E:\multi-agent-soc\models\network_detection_model.pkl"
+model_file = _PROJECT_ROOT / "models" / "network_detection_model.pkl"
 
 print("Loading dataset...")
 

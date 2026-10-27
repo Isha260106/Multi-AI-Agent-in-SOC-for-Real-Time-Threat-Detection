@@ -12,7 +12,7 @@ Tests:
        d. Extra irrelevant columns (should be ignored gracefully)
 
 Saves sample alerts to:
-  E:/multi-agent-soc/logs/network_detection_alerts.json
+  <project_root>/logs/network_detection_alerts.json
 """
 
 import sys
@@ -26,7 +26,7 @@ import pandas as pd
 # ---------------------------------------------------------------------------
 # Adjust path so the agents package is importable from the project root
 # ---------------------------------------------------------------------------
-PROJECT_ROOT = pathlib.Path(r"E:\multi-agent-soc")
+PROJECT_ROOT = pathlib.Path(__file__).resolve().parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from agents.network_detection.agent import NetworkDetectionAgent

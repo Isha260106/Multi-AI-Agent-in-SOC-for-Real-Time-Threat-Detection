@@ -37,8 +37,8 @@ Press Ctrl+C at any time to stop and see a session summary.
 
 Output:
   Terminal    -- clean, color-coded live alert stream
-  JSON log    -- E:/multi-agent-soc/logs/live_monitor_alerts.json (appended)
-  Agent log   -- E:/multi-agent-soc/logs/agent_runtime.log (agent internals)
+  JSON log    -- <project_root>/logs/live_monitor_alerts.json (appended)
+  Agent log   -- <project_root>/logs/agent_runtime.log (agent internals)
 
 NOTE: This script never modifies the model or the dataset.
 """

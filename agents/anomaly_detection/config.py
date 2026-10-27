@@ -11,7 +11,7 @@ import pathlib
 # ---------------------------------------------------------------------------
 # Project root
 # ---------------------------------------------------------------------------
-PROJECT_ROOT = pathlib.Path(r"E:\multi-agent-soc")
+PROJECT_ROOT = pathlib.Path(__file__).resolve().parent.parent.parent
 
 # ---------------------------------------------------------------------------
 # Dataset

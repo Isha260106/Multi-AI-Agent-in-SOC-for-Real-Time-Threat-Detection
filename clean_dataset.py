@@ -1,7 +1,24 @@
+import argparse
+import pathlib
 import pandas as pd
 
-input_file = r"E:\multi-agent-soc\data\processed\Thursday-01-03-2018_TrafficForML_CICFlowMeter.csv"
-output_file = r"E:\multi-agent-soc\data\processed\cleaned_dataset.csv"
+_PROJECT_ROOT = pathlib.Path(__file__).resolve().parent
+
+parser = argparse.ArgumentParser(description="Clean raw CICFlowMeter CSV for model training")
+parser.add_argument(
+    "--input",
+    default=str(_PROJECT_ROOT / "data" / "processed" / "Thursday-01-03-2018_TrafficForML_CICFlowMeter.csv"),
+    help="Path to raw input CSV (default: data/processed/<CIC-filename>.csv)",
+)
+parser.add_argument(
+    "--output",
+    default=str(_PROJECT_ROOT / "data" / "processed" / "cleaned_dataset.csv"),
+    help="Path to write cleaned CSV (default: data/processed/cleaned_dataset.csv)",
+)
+args = parser.parse_args()
+
+input_file = pathlib.Path(args.input)
+output_file = pathlib.Path(args.output)
 
 print("Loading dataset...")
 

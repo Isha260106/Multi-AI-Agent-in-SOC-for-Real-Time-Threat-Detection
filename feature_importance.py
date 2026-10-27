@@ -23,7 +23,7 @@ import matplotlib.pyplot as plt
 # ---------------------------------------------------------------------------
 # Paths
 # ---------------------------------------------------------------------------
-BASE_DIR   = pathlib.Path(r"E:\multi-agent-soc")
+BASE_DIR   = pathlib.Path(__file__).resolve().parent
 DATASET    = BASE_DIR / "data" / "processed" / "cleaned_dataset.csv"
 MODEL_FILE = BASE_DIR / "models" / "network_detection_model.pkl"
 MODELS_DIR = BASE_DIR / "models"
