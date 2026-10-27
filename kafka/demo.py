@@ -59,8 +59,8 @@ USAGE
 OUTPUTS
 -------
   Terminal   -- live event stream with colour-coded alerts
-  JSON log   -- E:/multi-agent-soc/logs/streaming_alerts.json
-  Runtime log-- E:/multi-agent-soc/logs/streaming_runtime.log
+  JSON log   -- <project_root>/logs/streaming_alerts.json
+  Runtime log-- <project_root>/logs/streaming_runtime.log
 """
 
 import argparse

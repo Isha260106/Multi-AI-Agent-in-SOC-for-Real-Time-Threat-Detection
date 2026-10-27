@@ -40,8 +40,9 @@ logger = logging.getLogger("NetworkDetectionAgent")
 # ---------------------------------------------------------------------------
 # Default file paths
 # ---------------------------------------------------------------------------
-DEFAULT_MODEL_PATH  = pathlib.Path(r"E:\multi-agent-soc\models\network_detection_model.pkl")
-DEFAULT_PREP_PATH   = pathlib.Path(r"E:\multi-agent-soc\models\network_detection_preprocessing.pkl")
+_PROJECT_ROOT        = pathlib.Path(__file__).resolve().parent.parent.parent
+DEFAULT_MODEL_PATH  = _PROJECT_ROOT / "models" / "network_detection_model.pkl"
+DEFAULT_PREP_PATH   = _PROJECT_ROOT / "models" / "network_detection_preprocessing.pkl"
 
 # ---------------------------------------------------------------------------
 # Columns to ignore if present in input (they were not used in training)

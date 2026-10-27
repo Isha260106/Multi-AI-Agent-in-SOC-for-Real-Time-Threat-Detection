@@ -15,7 +15,7 @@ import pathlib
 # ---------------------------------------------------------------------------
 # Project layouts
 # ---------------------------------------------------------------------------
-PROJECT_ROOT = pathlib.Path(r"E:\multi-agent-soc")
+PROJECT_ROOT = pathlib.Path(__file__).resolve().parent.parent
 
 MODEL_PATH  = PROJECT_ROOT / "models" / "network_detection_model.pkl"
 PREP_PATH   = PROJECT_ROOT / "models" / "network_detection_preprocessing.pkl"

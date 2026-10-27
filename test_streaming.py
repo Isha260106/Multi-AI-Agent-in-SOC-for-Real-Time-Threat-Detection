@@ -28,8 +28,8 @@ Test structure:
 
 Outputs:
   Terminal   -- detailed test report
-  JSON log   -- E:/multi-agent-soc/logs/streaming_alerts.json
-  Runtime log-- E:/multi-agent-soc/logs/streaming_runtime.log
+  JSON log   -- <project_root>/logs/streaming_alerts.json
+  Runtime log-- <project_root>/logs/streaming_runtime.log
 """
 
 import sys
@@ -41,7 +41,7 @@ import uuid
 # ---------------------------------------------------------------------------
 # Project root
 # ---------------------------------------------------------------------------
-PROJECT_ROOT = pathlib.Path(r"E:\multi-agent-soc")
+PROJECT_ROOT = pathlib.Path(__file__).resolve().parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from kafka.config import (

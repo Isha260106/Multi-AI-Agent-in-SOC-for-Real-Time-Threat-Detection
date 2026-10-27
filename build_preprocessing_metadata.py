@@ -10,7 +10,7 @@ This only reads the cleaned dataset to extract median values
 that were computed during training (clean_dataset.py used the full dataset median).
 
 Output:
-  E:\multi-agent-soc\models\network_detection_preprocessing.pkl
+  <project_root>/models/network_detection_preprocessing.pkl
 
 Fields saved:
   {
@@ -25,9 +25,10 @@ import pathlib
 import joblib
 import pandas as pd
 
-DATASET    = pathlib.Path(r"E:\multi-agent-soc\data\processed\cleaned_dataset.csv")
-MODEL_FILE = pathlib.Path(r"E:\multi-agent-soc\models\network_detection_model.pkl")
-OUT_FILE   = pathlib.Path(r"E:\multi-agent-soc\models\network_detection_preprocessing.pkl")
+_PROJECT_ROOT = pathlib.Path(__file__).resolve().parent
+DATASET    = _PROJECT_ROOT / "data" / "processed" / "cleaned_dataset.csv"
+MODEL_FILE = _PROJECT_ROOT / "models" / "network_detection_model.pkl"
+OUT_FILE   = _PROJECT_ROOT / "models" / "network_detection_preprocessing.pkl"
 TARGET_COL = "Label"
 
 print("Loading cleaned dataset...")
