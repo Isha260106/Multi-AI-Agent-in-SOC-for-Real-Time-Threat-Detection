@@ -19,6 +19,7 @@ import os
 import pathlib
 import sqlite3
 import sys
+import uuid
 from typing import Any, Dict, List, Optional
 
 # ---------------------------------------------------------------------------
@@ -33,9 +34,20 @@ try:
 except ImportError:
     DB_PATH = PROJECT_ROOT / "data" / "soc.db"
 
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import (
+    FastAPI,
+    HTTPException,
+    Query,
+    Request,
+    Header,
+    Security,
+    Depends,
+    status,
+)
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from fastapi.responses import JSONResponse
+from fastapi.security import APIKeyHeader
+from pydantic import BaseModel, Field
 
 # ---------------------------------------------------------------------------
 # FastAPI App Initialization
@@ -58,11 +70,74 @@ app.add_middleware(
         "http://127.0.0.1:4173",
     ],
     allow_credentials=True,
-    allow_methods=["GET", "OPTIONS"],
+    allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
 )
 
 logger = logging.getLogger("SOC.DashboardAPI")
+
+# ---------------------------------------------------------------------------
+# Ingestion Authentication & Unified Pipeline Singleton
+# ---------------------------------------------------------------------------
+DEFAULT_SENSOR_KEY = "soc-sensor-dev-key-2026"
+api_key_header = APIKeyHeader(name="X-SOC-Sensor-Key", auto_error=False)
+
+
+def verify_sensor_key(
+    x_soc_sensor_key: Optional[str] = Security(api_key_header),
+    authorization: Optional[str] = Header(None),
+) -> str:
+    """
+    Validate that incoming requests carry a valid Pre-Shared Key (PSK).
+    Checks header 'X-SOC-Sensor-Key' or 'Authorization: Bearer <key>'.
+    Configurable via SOC_SENSOR_KEY environment variable.
+    """
+    key = None
+    if x_soc_sensor_key:
+        key = x_soc_sensor_key.strip()
+    elif authorization:
+        auth = authorization.strip()
+        if auth.lower().startswith("bearer "):
+            key = auth[7:].strip()
+        elif auth.lower().startswith("apikey "):
+            key = auth[7:].strip()
+        else:
+            key = auth
+
+    expected_key = os.environ.get("SOC_SENSOR_KEY", DEFAULT_SENSOR_KEY)
+    if not key or key != expected_key:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Unauthorized: Invalid or missing sensor key",
+            headers={"WWW-Authenticate": "ApiKey"},
+        )
+    return key
+
+
+_pipeline_instance: Optional[Any] = None
+
+
+def get_pipeline():
+    """Lazy-load the unified SOC pipeline singleton for ingestion."""
+    global _pipeline_instance
+    if _pipeline_instance is None:
+        from kafka.consumer import SOCPipeline
+        _pipeline_instance = SOCPipeline()
+    return _pipeline_instance
+
+
+class FlowIngestPayload(BaseModel):
+    event_id: Optional[str] = Field(None, description="Unique UUID for this event. Generated if omitted.")
+    timestamp: Optional[str] = Field(None, description="ISO-8601 flow timestamp. Generated if omitted.")
+    source: Optional[str] = Field("live_sensor", description="Source identifier (marked as live_sensor).")
+    sequence: Optional[int] = Field(None, description="Optional monotonic sequence number from sensor.")
+    src_ip: Optional[str] = Field(None, description="Observed source IP address.")
+    dst_ip: Optional[str] = Field(None, description="Observed destination IP address.")
+    src_port: Optional[int] = Field(None, description="Observed source transport port.")
+    dst_port: Optional[int] = Field(None, description="Observed destination transport port.")
+    protocol: Optional[Any] = Field(None, description="Transport protocol number or name.")
+    actual_label: Optional[str] = Field(None, description="Ground truth label if known (for verification).")
+    features: Dict[str, Any] = Field(..., description="Map of exactly 78 extracted flow metrics.")
 
 
 # ---------------------------------------------------------------------------
@@ -122,27 +197,35 @@ def get_agents_status():
     agents = []
 
     # 1. Network Detection Agent
-    rf_model_path = PROJECT_ROOT / "models" / "best_random_forest.joblib"
-    nd_active = rf_model_path.exists()
+    rf_model_path = PROJECT_ROOT / "models" / "network_detection_model.pkl"
+    rf_meta_path = PROJECT_ROOT / "models" / "network_detection_preprocessing.pkl"
+    nd_active = (
+        rf_model_path.is_file() and rf_model_path.stat().st_size > 0 and
+        rf_meta_path.is_file() and rf_meta_path.stat().st_size > 0
+    )
     agents.append({
         "id": "network_detection",
         "name": "Network Detection Agent",
         "type": "Supervised Classifier",
         "model": "Random Forest (78 features)",
         "status": "ACTIVE" if nd_active else "DEGRADED",
-        "details": f"Signature model {'ready' if nd_active else 'missing model file'}",
+        "details": f"Signature model {'ready (78 features)' if nd_active else 'missing model or preprocessing metadata'}",
     })
 
     # 2. Anomaly Detection Agent
-    if_model_path = PROJECT_ROOT / "models" / "isolation_forest.joblib"
-    ad_active = if_model_path.exists()
+    if_model_path = PROJECT_ROOT / "models" / "anomaly_detection_model.pkl"
+    if_meta_path = PROJECT_ROOT / "models" / "anomaly_detection_preprocessing.pkl"
+    ad_active = (
+        if_model_path.is_file() and if_model_path.stat().st_size > 0 and
+        if_meta_path.is_file() and if_meta_path.stat().st_size > 0
+    )
     agents.append({
         "id": "anomaly_detection",
         "name": "Anomaly Detection Agent",
         "type": "Unsupervised Outlier Detector",
         "model": "Isolation Forest",
         "status": "ACTIVE" if ad_active else "DEGRADED",
-        "details": f"Baseline model {'ready' if ad_active else 'missing model file'}",
+        "details": f"Baseline model {'ready (Isolation Forest)' if ad_active else 'missing model or preprocessing metadata'}",
     })
 
     # 3. Alert Correlation Agent
@@ -198,7 +281,17 @@ def get_agents_status():
         "details": "Near-real-time flow simulator (Non-live tap / simulated replay)",
     })
 
-    # 6. Central Storage
+    # 8. Live Sensor Ingestion Endpoint (Phase 1)
+    agents.append({
+        "id": "live_sensor_ingestion",
+        "name": "Live Sensor Ingestion Endpoint",
+        "type": "Authenticated REST Sensor Ingestion",
+        "model": "POST /api/ingest/flow (Phase 1 Ready)",
+        "status": "ACTIVE",
+        "details": "Authenticated receiver for live VM sensor telemetry",
+    })
+
+    # 9. Central Storage
     conn = get_db_connection()
     storage_status = "ONLINE" if conn else ("MISSING" if not DB_PATH.exists() else "ERROR")
     if conn:
@@ -916,6 +1009,201 @@ def api_enrich_investigation(
     agent = ThreatIntelligenceAgent()
     enriched = agent.enrich_investigation(inv, provider_name=provider, force_refresh=force, persist=True)
     return enriched
+
+
+# ---------------------------------------------------------------------------
+# Phase 1: Live VM Sensor Flow Ingestion Endpoint
+# ---------------------------------------------------------------------------
+
+@app.post("/api/ingest/flow", status_code=status.HTTP_201_CREATED)
+async def ingest_flow_event(
+    payload: FlowIngestPayload,
+    request: Request,
+    _auth_key: str = Depends(verify_sensor_key),
+):
+    """
+    Secure, authenticated endpoint for ingesting live sensor flow events.
+
+    Execution Pipeline:
+      1. Request-size & Pre-Shared Key (PSK) authentication checks.
+      2. Event schema validation (all 78 features present and numeric).
+      3. Duplicate event_id check against SQLite (409 Conflict).
+      4. Event routing through unified SOCPipeline:
+         - Network Detection (Random Forest classifier)
+         - Anomaly Detection (Isolation Forest detector)
+         - Alert Correlation (multi-agent incident synthesis)
+         - Threat Assessment (deterministic policy engine)
+         - Threat Investigation (automated Stage 10 coordinator when triggered)
+         - Storage persistence (soc.db WAL transactions)
+      5. Response formatted with complete multi-agent analysis summary.
+    """
+    # 1. Enforce payload size limit (1MB = 1,048,576 bytes)
+    content_length = request.headers.get("content-length")
+    if content_length:
+        try:
+            if int(content_length) > 1_048_576:
+                raise HTTPException(
+                    status_code=status.HTTP_413_CONTENT_TOO_LARGE,
+                    detail="Payload too large. Maximum allowed size is 1MB.",
+                )
+        except ValueError:
+            pass
+
+    raw_body = await request.body()
+    if len(raw_body) > 1_048_576:
+        raise HTTPException(
+            status_code=status.HTTP_413_CONTENT_TOO_LARGE,
+            detail="Payload too large. Maximum allowed size is 1MB.",
+        )
+
+    # 2. Validate features dictionary
+    if not isinstance(payload.features, dict) or not payload.features:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Field 'features' must be a non-empty dictionary containing the 78 flow features.",
+        )
+
+    pipeline = get_pipeline()
+    expected_features = pipeline.feature_names
+
+    # Check for missing features
+    missing = [f for f in expected_features if f not in payload.features]
+    if missing:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail={
+                "error": "Missing required model features",
+                "missing_count": len(missing),
+                "missing_features": missing[:10],
+            },
+        )
+
+    # Check for non-numeric or invalid feature values
+    invalid_features = []
+    normalized_features = {}
+    for f in expected_features:
+        val = payload.features[f]
+        if val is None or isinstance(val, bool):
+            invalid_features.append(f)
+        else:
+            try:
+                normalized_features[f] = float(val)
+            except (ValueError, TypeError):
+                invalid_features.append(f)
+
+    if invalid_features:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail={
+                "error": "Non-numeric or null feature values",
+                "invalid_count": len(invalid_features),
+                "invalid_features": invalid_features[:10],
+            },
+        )
+
+    # 3. Check for duplicate event_id
+    event_id = payload.event_id or str(uuid.uuid4())
+    conn = get_db_connection()
+    if conn:
+        try:
+            existing = conn.execute("SELECT 1 FROM events WHERE event_id = ?", (event_id,)).fetchone()
+            if existing:
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail=f"Event ID '{event_id}' already exists in database.",
+                )
+        finally:
+            conn.close()
+
+    # 4. Context fallback from features if not given in top-level payload
+    dst_port = payload.dst_port
+    if dst_port is None and "Dst Port" in normalized_features:
+        try:
+            dst_port = int(normalized_features["Dst Port"])
+        except Exception:
+            pass
+
+    protocol = payload.protocol
+    if protocol is None and "Protocol" in normalized_features:
+        try:
+            protocol = int(normalized_features["Protocol"])
+        except Exception:
+            pass
+
+    event_dict = {
+        "event_id": event_id,
+        "event_type": "network_flow",
+        "timestamp": payload.timestamp or datetime.datetime.now().isoformat(),
+        "source": payload.source or "live_sensor",
+        "sequence": payload.sequence or 0,
+        "actual_label": payload.actual_label,
+        "src_ip": payload.src_ip,
+        "dst_ip": payload.dst_ip,
+        "src_port": payload.src_port,
+        "dst_port": dst_port,
+        "protocol": protocol,
+        "features": normalized_features,
+    }
+
+    # 5. Process through the full existing SOC pipeline
+    try:
+        result = pipeline.process_event(event_dict, persist=True)
+    except Exception as exc:
+        logger.error("Pipeline failure for ingested flow event %s: %s", event_id, exc, exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Pipeline processing failed: {str(exc)}",
+        )
+
+    # 6. Format and return response
+    return JSONResponse(
+        status_code=status.HTTP_201_CREATED,
+        content={
+            "status": "ACCEPTED",
+            "message": "Flow event successfully validated, analyzed, and persisted",
+            "event_id": event_id,
+            "source": event_dict["source"],
+            "timestamp": event_dict["timestamp"],
+            "network_context": {
+                "src_ip": payload.src_ip,
+                "dst_ip": payload.dst_ip,
+                "src_port": payload.src_port,
+                "dst_port": dst_port,
+                "protocol": protocol,
+            },
+            "processing_time_s": result["processing_time_s"],
+            "network_detection": {
+                "prediction": result["network_alert"]["prediction"],
+                "confidence": result["network_alert"]["confidence"],
+                "severity": result["network_alert"]["severity"],
+                "status": result["network_alert"]["status"],
+            },
+            "anomaly_detection": {
+                "prediction": result["anomaly_alert"]["prediction"],
+                "anomaly_score": result["anomaly_alert"]["anomaly_score"],
+                "severity": result["anomaly_alert"]["severity"],
+            } if result.get("anomaly_alert") else None,
+            "threat_assessment": {
+                "category": result["threat_assessment"]["category"],
+                "severity": result["threat_assessment"]["severity"],
+                "explanation": result["threat_assessment"]["explanation"],
+            } if result.get("threat_assessment") else None,
+            "incident": {
+                "incident_id": result["incident"]["incident_id"],
+                "status": result["incident"]["status"],
+                "severity": result["incident"]["severity"],
+            } if result.get("incident") else None,
+            "investigation": {
+                "investigation_id": result["investigation"]["investigation_id"],
+                "investigation_status": result["investigation"]["investigation_status"],
+                "threat_category": result["investigation"].get("threat_category"),
+                "severity": result["investigation"].get("severity"),
+                "summary": result["investigation"].get("summary"),
+            } if result.get("investigation") else None,
+            "investigation_triggered": result["investigation_triggered"],
+            "persisted": result["persisted"],
+        },
+    )
 
 
 if __name__ == "__main__":

@@ -358,6 +358,220 @@ class _SessionStats:
 # ---------------------------------------------------------------------------
 # Main consumer function
 # ---------------------------------------------------------------------------
+# Multi-Agent SOC Processing Pipeline
+# ---------------------------------------------------------------------------
+
+class SOCPipeline:
+    """
+    Unified Multi-Agent SOC Processing Pipeline.
+    Encapsulates all analytical detection and reasoning agents:
+      1. Network Detection Agent (Supervised Random Forest)
+      2. Anomaly Detection Agent (Unsupervised Isolation Forest)
+      3. Alert Correlation Agent (Deterministic Multi-Agent Correlation)
+      4. Threat Assessment Engine (Stage 9A Zero-Rerun Decision Table)
+      5. Threat Investigation Coordinator (Stage 10 Multi-Agent Causality)
+      6. AlertStore SQLite Persistence (Stage 5 Central Storage)
+    """
+
+    def __init__(self, log_alerts: bool = True):
+        self.log_alerts = log_alerts
+        self.agent = NetworkDetectionAgent()
+        self.feature_names = self.agent._feature_names
+
+        self.anomaly_agent = None
+        if _ANOMALY_AVAILABLE:
+            try:
+                self.anomaly_agent = _AnomalyAgent()
+            except Exception as _ae:
+                _log.warning("[Stage 6] Anomaly agent init failed: %s", _ae)
+
+        self.correlation_agent = None
+        if _CORRELATION_AVAILABLE:
+            try:
+                self.correlation_agent = _CorrelationAgent()
+            except Exception as _cae:
+                _log.warning("[Stage 7] Correlation agent init failed: %s", _cae)
+
+        self.threat_engine = None
+        if _THREAT_ASSESSMENT_AVAILABLE:
+            try:
+                self.threat_engine = _ThreatAssessmentEngine()
+            except Exception as _tae:
+                _log.warning("[Stage 9A] Threat assessment init failed: %s", _tae)
+
+        self.investigation_coord = None
+        if _INVESTIGATION_AVAILABLE:
+            try:
+                self.investigation_coord = _InvestigationCoordinator()
+            except Exception as _ice:
+                _log.warning("[Stage 10] Threat investigation init failed: %s", _ice)
+
+    def process_event(self, event: dict, persist: bool = True) -> dict:
+        """
+        Process a single network flow event through the complete multi-agent pipeline.
+        Preserves IP, port, protocol, and timestamp metadata separately from the 78 model features.
+        """
+        t_start = time.perf_counter()
+        eid = event.get("event_id") or str(uuid.uuid4())
+        event["event_id"] = eid
+        actual = event.get("actual_label")
+        source = event.get("source", "live_sensor")
+
+        # Extract observable indicator context
+        src_ip = event.get("src_ip")
+        dst_ip = event.get("dst_ip")
+        src_port = event.get("src_port")
+        dst_port = event.get("dst_port")
+        protocol = event.get("protocol")
+
+        # Convert event features -> 1-row DataFrame
+        df, _ = _event_to_dataframe(event, self.feature_names)
+
+        # 1. Supervised Network Detection Agent
+        alerts = self.agent.analyze(df)
+        alert = alerts[0]
+        t_elapsed = time.perf_counter() - t_start
+
+        # Enrich alert with streaming and observable metadata
+        alert["event_id"] = eid
+        alert["actual_label"] = actual
+        alert["processing_time_s"] = round(t_elapsed, 6)
+
+        if alert.get("network_context") is None:
+            alert["network_context"] = {}
+        if src_ip:
+            alert["network_context"]["src_ip"] = src_ip
+        if dst_ip:
+            alert["network_context"]["dst_ip"] = dst_ip
+        if src_port is not None:
+            alert["network_context"]["src_port"] = src_port
+        if dst_port is not None:
+            alert["network_context"]["Dst Port"] = dst_port
+        if protocol is not None:
+            alert["network_context"]["Protocol"] = protocol
+
+        if self.log_alerts:
+            _append_alert(alert)
+
+        # 2. Unsupervised Anomaly Detection Agent
+        anomaly_alert = None
+        if self.anomaly_agent is not None:
+            try:
+                t_a_start = time.perf_counter()
+                anomaly_alerts = self.anomaly_agent.analyze(df)
+                t_a_elapsed = time.perf_counter() - t_a_start
+                anomaly_alert = anomaly_alerts[0]
+
+                anomaly_alert["event_id"] = eid
+                anomaly_alert["actual_label"] = actual
+                anomaly_alert["processing_time_s"] = round(t_a_elapsed, 6)
+
+                if anomaly_alert.get("network_context") is None:
+                    anomaly_alert["network_context"] = {}
+                if src_ip:
+                    anomaly_alert["network_context"]["src_ip"] = src_ip
+                if dst_ip:
+                    anomaly_alert["network_context"]["dst_ip"] = dst_ip
+                if src_port is not None:
+                    anomaly_alert["network_context"]["src_port"] = src_port
+                if dst_port is not None:
+                    anomaly_alert["network_context"]["Dst Port"] = dst_port
+                if protocol is not None:
+                    anomaly_alert["network_context"]["Protocol"] = protocol
+
+                if self.log_alerts:
+                    from agents.anomaly_detection.config import ANOMALY_ALERT_FILE as _ANOMALY_ALERT_FILE
+                    _append_alert_to_file(anomaly_alert, _ANOMALY_ALERT_FILE)
+
+                _log.info(
+                    "Anomaly result: event_id=%s prediction=%s score=%.6f",
+                    eid, anomaly_alert.get("prediction"), anomaly_alert.get("anomaly_score", 0.0),
+                )
+            except Exception as _ae:
+                _log.error("[Stage 6] Anomaly agent failed for event_id=%s: %s", eid, _ae)
+                anomaly_alert = None
+
+        # 3. Alert Correlation Agent
+        incident = None
+        if self.correlation_agent is not None:
+            try:
+                current_alerts = [alert]
+                if anomaly_alert:
+                    current_alerts.append(anomaly_alert)
+                incidents_out = self.correlation_agent.correlate(current_alerts)
+                if incidents_out:
+                    incident = incidents_out[0]
+            except Exception as _cae:
+                _log.error("[Stage 7] Correlation failed for event_id=%s: %s", eid, _cae)
+
+        # 4. Threat Assessment Engine (Stage 9A)
+        assessment = None
+        if self.threat_engine is not None:
+            try:
+                assessment = self.threat_engine.assess(
+                    network_alert=alert,
+                    anomaly_alert=anomaly_alert,
+                    event_id=eid,
+                    actual_label=actual,
+                )
+            except Exception as _tae:
+                _log.error("[Stage 9A] Threat assessment failed for event_id=%s: %s", eid, _tae)
+
+        # 5. Threat Investigation Coordinator (Stage 10)
+        investigation = None
+        if self.investigation_coord is not None and assessment is not None:
+            try:
+                investigation = self.investigation_coord.investigate(
+                    event_id=eid,
+                    event=event,
+                    network_alert=alert,
+                    anomaly_alert=anomaly_alert,
+                    incident=incident,
+                    threat_assessment=assessment,
+                )
+            except Exception as _inv_err:
+                _log.error("[Stage 10] Investigation failed for event_id=%s: %s", eid, _inv_err)
+
+        # 6. Central Storage Persistence
+        persisted = False
+        if persist and _STORAGE_AVAILABLE:
+            try:
+                with _AlertStore() as _store:
+                    _store.save_event(event) # Parent event first
+                    _store.save_alert(alert)
+                    if anomaly_alert:
+                        _store.save_alert(anomaly_alert)
+                    if incident:
+                        _store.save_incident(incident)
+                    if assessment:
+                        _store.save_assessment(assessment)
+                    if investigation:
+                        _store.save_investigation(investigation)
+                persisted = True
+                _log.debug("Saved to soc.db: event_id=%s", eid)
+            except Exception as _db_exc:
+                _log.error("[Storage] Failed to save event_id=%s to soc.db: %s", eid, _db_exc)
+
+        total_time = round(time.perf_counter() - t_start, 6)
+
+        return {
+            "event_id": eid,
+            "source": source,
+            "actual_label": actual,
+            "network_alert": alert,
+            "anomaly_alert": anomaly_alert,
+            "incident": incident,
+            "threat_assessment": assessment,
+            "investigation": investigation,
+            "investigation_triggered": bool(investigation is not None),
+            "persisted": persisted,
+            "processing_time_s": total_time,
+        }
+
+
+# ---------------------------------------------------------------------------
+# Main consumer function
+# ---------------------------------------------------------------------------
 
 def consume_events(
     count: int = DEFAULT_EVENT_COUNT,
@@ -402,64 +616,31 @@ def consume_events(
     _log.info("Consumer started. transport=%s topic=%s expecting=%d", transport, topic, count)
 
     try:
-        agent = NetworkDetectionAgent()
+        pipeline = SOCPipeline(log_alerts=True)
     except FileNotFoundError as exc:
         _print(f"\n  {RED}[ERROR] Cannot load agent: {exc}{RESET}")
         _log.error("Agent init failed: %s", exc)
         return _SessionStats()
 
-    feature_names = agent._feature_names       # 78-element list from preprocessing metadata
-    _print(f"  {GREEN}Network Detection Agent ready. Features: {agent._n_features}{RESET}")
+    feature_names = pipeline.feature_names
+    _print(f"  {GREEN}Network Detection Agent ready. Features: {len(feature_names)}{RESET}")
 
-    # ------------------------------------------------------------------ #
-    # Initialise Anomaly Detection Agent (Stage 6)                         #
-    # ------------------------------------------------------------------ #
-    _anomaly_agent = None
-    if _ANOMALY_AVAILABLE:
-        try:
-            _anomaly_agent = _AnomalyAgent()
-            _print(f"  {GREEN}Anomaly Detection Agent ready.  "
-                   f"Threshold: {_anomaly_agent._threshold:.6f}{RESET}")
-        except FileNotFoundError:
-            _print(f"  {YELLOW}[Stage 6] Anomaly model not found -- "
-                   f"run: python agents/anomaly_detection/train.py{RESET}")
-        except Exception as _ae:
-            _print(f"  {YELLOW}[Stage 6] Anomaly agent init failed: {str(_ae)[:80]}{RESET}")
+    if pipeline.anomaly_agent is not None:
+        _print(f"  {GREEN}Anomaly Detection Agent ready.  "
+               f"Threshold: {pipeline.anomaly_agent._threshold:.6f}{RESET}")
+    else:
+        _print(f"  {YELLOW}[Stage 6] Anomaly model not found -- "
+               f"run: python agents/anomaly_detection/train.py{RESET}")
 
-    # ------------------------------------------------------------------ #
-    # Initialise Alert Correlation Agent (Stage 7)                         #
-    # ------------------------------------------------------------------ #
-    _correlation_agent = None
-    if _CORRELATION_AVAILABLE:
-        try:
-            _correlation_agent = _CorrelationAgent()
-            _print(f"  {GREEN}Alert Correlation Agent ready.{RESET}")
-        except Exception as _cae:
-            _print(f"  {YELLOW}[Stage 7] Correlation agent init failed: {str(_cae)[:80]}{RESET}")
+    if pipeline.correlation_agent is not None:
+        _print(f"  {GREEN}Alert Correlation Agent ready.{RESET}")
 
-    # ------------------------------------------------------------------ #
-    # Initialise Threat Assessment Engine (Stage 9A)                       #
-    # ------------------------------------------------------------------ #
-    _threat_engine = None
-    if _THREAT_ASSESSMENT_AVAILABLE:
-        try:
-            _threat_engine = _ThreatAssessmentEngine()
-            _print(f"  {GREEN}Unified Threat Assessment Engine ready.{RESET}")
-        except Exception as _tae:
-            _print(f"  {YELLOW}[Stage 9A] Threat Assessment init failed: {str(_tae)[:80]}{RESET}")
+    if pipeline.threat_engine is not None:
+        _print(f"  {GREEN}Unified Threat Assessment Engine ready.{RESET}")
 
-    # ------------------------------------------------------------------ #
-    # Initialise Threat Investigation Coordinator (Stage 10)               #
-    # ------------------------------------------------------------------ #
-    _investigation_coord = None
-    if _INVESTIGATION_AVAILABLE:
-        try:
-            _investigation_coord = _InvestigationCoordinator()
-            _print(f"  {GREEN}Threat Investigation Coordinator ready.{RESET}")
-        except Exception as _ice:
-            _print(f"  {YELLOW}[Stage 10] Threat Investigation init failed: {str(_ice)[:80]}{RESET}")
+    if pipeline.investigation_coord is not None:
+        _print(f"  {GREEN}Threat Investigation Coordinator ready.{RESET}")
 
-    from agents.anomaly_detection.config import ANOMALY_ALERT_FILE as _ANOMALY_ALERT_FILE
     _print(f"  {BOLD}Waiting for events -- press Ctrl+C to stop{RESET}")
     _print("  " + "-" * 56)
 
@@ -488,173 +669,69 @@ def consume_events(
                 continue
 
             # ---------------------------------------------------------- #
-            # Process event                                                #
+            # Process event through unified SOC Pipeline                   #
             # ---------------------------------------------------------- #
             seq       = event.get("sequence", processed + 1)
             actual    = event.get("actual_label")
             event_id  = event.get("event_id", "unknown")
 
             _log.info("Event received: seq=%d event_id=%s", seq, event_id)
-
             t_start = time.perf_counter()
 
             try:
-                # Convert event features -> 1-row DataFrame
-                df, eid = _event_to_dataframe(event, feature_names)
+                result = pipeline.process_event(event, persist=True)
+                alert = result["network_alert"]
+                anomaly_alert = result["anomaly_alert"]
+                incident = result["incident"]
+                assessment = result["threat_assessment"]
+                investigation = result["investigation"]
+                t_elapsed = result["processing_time_s"]
 
-                # Run agent (preprocess → predict → generate_alert)
-                alerts = agent.analyze(df)
-                alert  = alerts[0]
-
-                t_elapsed = time.perf_counter() - t_start
-
-                # Enrich alert with streaming metadata
-                alert["event_id"]        = eid
-                alert["actual_label"]    = actual
-                alert["processing_time_s"] = round(t_elapsed, 6)
-
-                # Stage 4: append to rolling JSON log (unchanged)
-                _append_alert(alert)
-
-                # Stage 6: Run Anomaly Detection Agent on the same event
-                if _anomaly_agent is not None:
-                    try:
-                        t_a_start       = time.perf_counter()
-                        anomaly_alerts  = _anomaly_agent.analyze(df)
-                        t_a_elapsed     = time.perf_counter() - t_a_start
-                        anomaly_alert   = anomaly_alerts[0]
-
-                        # Enrich anomaly alert with streaming metadata
-                        anomaly_alert["event_id"]          = eid
-                        anomaly_alert["actual_label"]      = actual
-                        anomaly_alert["processing_time_s"] = round(t_a_elapsed, 6)
-
-                        # Append to Anomaly Detection JSON log
-                        _append_alert_to_file(anomaly_alert, _ANOMALY_ALERT_FILE)
-
-                        # Print compact anomaly line
-                        a_pred  = anomaly_alert.get("prediction", "?")
-                        a_score = anomaly_alert.get("anomaly_score", 0.0)
-                        a_sev   = anomaly_alert.get("severity", "?")
-                        a_color = RED if a_pred == "Anomalous" else GREEN
-                        _print(
-                            f"  {'Anomaly':12}: {a_color}{a_pred}{RESET}  "
-                            f"score={a_score:.4f}  sev={a_color}{a_sev}{RESET}  "
-                            f"({t_a_elapsed*1000:.1f} ms)"
-                        )
-                        _log.info(
-                            "Anomaly result: event_id=%s prediction=%s score=%.6f",
-                            eid, a_pred, a_score,
-                        )
-
-                    except Exception as _ae:
-                        _log.error(
-                            "[Stage 6] Anomaly agent failed for event_id=%s: %s",
-                            eid, _ae,
-                        )
-                        anomaly_alert = None
-                else:
-                    anomaly_alert = None
-
-                # Stage 7: Run Alert Correlation Agent
-                incident = None
-                if _correlation_agent is not None:
-                    try:
-                        # Collect all alerts created for this event
-                        current_alerts = [alert]
-                        if anomaly_alert:
-                            current_alerts.append(anomaly_alert)
-                        
-                        incidents_out = _correlation_agent.correlate(current_alerts)
-                        if incidents_out:
-                            incident = incidents_out[0]
-                            i_sev = incident.get("severity", "?")
-                            i_color = RED if i_sev == "HIGH" else (YELLOW if i_sev == "MEDIUM" else GREEN)
-                            _print(f"  {'Incident':12}: {i_color}{incident.get('status')}{RESET}  "
-                                   f"sev={i_color}{i_sev}{RESET}  (Agents: {len(incident.get('alert_ids', []))})")
-                            
-                    except Exception as _cae:
-                        _log.error("[Stage 7] Correlation failed for event_id=%s: %s", eid, _cae)
-
-                # Stage 9A: Run Unified Threat Assessment Engine (Zero model re-runs)
-                assessment = None
-                if _threat_engine is not None:
-                    try:
-                        assessment = _threat_engine.assess(
-                            network_alert=alert,
-                            anomaly_alert=anomaly_alert,
-                            event_id=eid,
-                            actual_label=actual,
-                        )
-                        t_cat = assessment.get("category", "?")
-                        t_sev = assessment.get("severity", "?")
-                        t_color = RED if t_sev == "HIGH" else (YELLOW if t_sev == "MEDIUM" else GREEN)
-                        _print(f"  {'Threat POST':12}: {t_color}{t_cat}{RESET}  "
-                               f"sev={t_color}{t_sev}{RESET}")
-                    except Exception as _tae:
-                        _log.error("[Stage 9A] Threat assessment failed for event_id=%s: %s", eid, _tae)
-
-                # Stage 10: Multi-Agent Threat Investigation (Triggered on Suspicious/Threat events)
-                investigation = None
-                if _investigation_coord is not None and assessment is not None:
-                    try:
-                        investigation = _investigation_coord.investigate(
-                            event_id=eid,
-                            event=event,
-                            network_alert=alert,
-                            anomaly_alert=anomaly_alert,
-                            incident=incident,
-                            threat_assessment=assessment,
-                        )
-                        if investigation:
-                            inv_stat = investigation.get("investigation_status", "OPEN")
-                            inv_color = RED if "TIER2" in inv_stat or "COMPLETED" in inv_stat else YELLOW
-                            _print(f"  {'Investigation':12}: {inv_color}{inv_stat}{RESET}  "
-                                   f"({investigation.get('investigation_id', '')[:8]}...)")
-                    except Exception as _inv_err:
-                        _log.error("[Stage 10] Investigation failed for event_id=%s: %s", eid, _inv_err)
-
-                # Stage 5, 6, 7, 9A & 10: persist event + alerts + incident + assessment + investigation to SQLite
-                if _STORAGE_AVAILABLE:
-                    try:
-                        with _AlertStore() as _store:
-                            _store.save_event(event) # FK parent goes first
-                            _store.save_alert(alert) # ND alert
-                            if anomaly_alert:
-                                _store.save_alert(anomaly_alert) # Anomaly alert
-                            if incident:
-                                _store.save_incident(incident) # Correlated incident
-                            if assessment:
-                                _store.save_assessment(assessment) # Unified Threat Assessment
-                            if investigation:
-                                _store.save_investigation(investigation) # Multi-Agent Threat Investigation Report
-                        _log.debug("Saved to soc.db: event_id=%s", eid)
-                    except Exception as _db_exc:
-                        _log.error(
-                            "[Storage] Failed to save event_id=%s to soc.db: %s",
-                            eid, _db_exc,
-                        )
-                        _print(
-                            f"\n  {YELLOW}[Storage WARNING] Could not write to "
-                            f"soc.db: {str(_db_exc)[:100]}{RESET}"
-                        )
-
-                stats.record(alert["prediction"], actual, t_elapsed)
                 processed += 1
-
+                stats.record(alert["prediction"], actual, t_elapsed)
                 _print_alert(processed, count, alert, t_elapsed)
+
+                if anomaly_alert:
+                    a_pred  = anomaly_alert.get("prediction", "?")
+                    a_score = anomaly_alert.get("anomaly_score", 0.0)
+                    a_sev   = anomaly_alert.get("severity", "?")
+                    a_color = RED if a_pred == "Anomalous" else GREEN
+                    _print(
+                        f"  {'Anomaly':12}: {a_color}{a_pred}{RESET}  "
+                        f"score={a_score:.4f}  sev={a_color}{a_sev}{RESET}  "
+                        f"({anomaly_alert.get('processing_time_s', 0)*1000:.1f} ms)"
+                    )
+
+                if incident:
+                    i_sev = incident.get("severity", "?")
+                    i_color = RED if i_sev == "HIGH" else (YELLOW if i_sev == "MEDIUM" else GREEN)
+                    _print(f"  {'Incident':12}: {i_color}{incident.get('status')}{RESET}  "
+                           f"sev={i_color}{i_sev}{RESET}  (Agents: {len(incident.get('alert_ids', []))})")
+
+                if assessment:
+                    t_cat = assessment.get("category", "?")
+                    t_sev = assessment.get("severity", "?")
+                    t_color = RED if t_sev == "HIGH" else (YELLOW if t_sev == "MEDIUM" else GREEN)
+                    _print(f"  {'Threat POST':12}: {t_color}{t_cat}{RESET}  "
+                           f"sev={t_color}{t_sev}{RESET}")
+
+                if investigation:
+                    inv_stat = investigation.get("investigation_status", "OPEN")
+                    inv_color = RED if "TIER2" in inv_stat or "COMPLETED" in inv_stat else YELLOW
+                    _print(f"  {'Investigation':12}: {inv_color}{inv_stat}{RESET}  "
+                           f"({investigation.get('investigation_id', '')[:8]}...)")
 
                 _log.info(
                     "Prediction complete: seq=%d event_id=%s prediction=%s "
                     "confidence=%.4f severity=%s time=%.4fs",
-                    seq, eid, alert["prediction"], alert["confidence"],
+                    seq, result["event_id"], alert["prediction"], alert["confidence"],
                     alert["severity"], t_elapsed,
                 )
 
                 if alert["prediction"] == "Infilteration":
                     _log.warning(
                         "SUSPICIOUS traffic detected: event_id=%s confidence=%.4f",
-                        eid, alert["confidence"],
+                        result["event_id"], alert["confidence"],
                     )
 
             except ValueError as exc:

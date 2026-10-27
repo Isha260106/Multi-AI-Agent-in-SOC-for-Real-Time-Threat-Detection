@@ -41,6 +41,11 @@ class TestDashboardAPI(unittest.TestCase):
         self.assertIn("Network Detection Agent", agent_names)
         self.assertIn("Anomaly Detection Agent", agent_names)
         self.assertIn("Unified Threat Assessment Engine", agent_names)
+        self.assertIn("Live Sensor Ingestion Endpoint", agent_names)
+
+        agent_map = {a["name"]: a for a in data["agents"]}
+        self.assertEqual(agent_map["Network Detection Agent"]["status"], "ACTIVE")
+        self.assertEqual(agent_map["Anomaly Detection Agent"]["status"], "ACTIVE")
 
     def test_overview_statistics(self):
         resp = self.client.get("/api/overview")
