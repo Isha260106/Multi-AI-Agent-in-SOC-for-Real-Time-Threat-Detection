@@ -12,9 +12,11 @@ PURPOSE:
   - Gracefully handles empty databases, missing tables, and missing fields without crashing.
 """
 
+import asyncio
 import datetime
 import json
 import logging
+import math
 import os
 import pathlib
 import sqlite3
@@ -28,6 +30,12 @@ from typing import Any, Dict, List, Optional
 PROJECT_ROOT = pathlib.Path(__file__).resolve().parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
+
+if sys.platform == "win32":
+    try:
+        asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+    except Exception:
+        pass
 
 try:
     from storage.config import DB_PATH
@@ -126,8 +134,13 @@ def get_pipeline():
     return _pipeline_instance
 
 
+# Telemetry source mode state ('replay', 'vm_logs', 'vm_flows', 'vm_all')
+CURRENT_TELEMETRY_MODE = os.environ.get("SOC_VM_TELEMETRY_MODE", "replay")
+
+
 class FlowIngestPayload(BaseModel):
     event_id: Optional[str] = Field(None, description="Unique UUID for this event. Generated if omitted.")
+    sensor_id: Optional[str] = Field(None, description="Optional sensor hardware/VM identifier (e.g., sensor-vm-01).")
     timestamp: Optional[str] = Field(None, description="ISO-8601 flow timestamp. Generated if omitted.")
     source: Optional[str] = Field("live_sensor", description="Source identifier (marked as live_sensor).")
     sequence: Optional[int] = Field(None, description="Optional monotonic sequence number from sensor.")
@@ -138,6 +151,26 @@ class FlowIngestPayload(BaseModel):
     protocol: Optional[Any] = Field(None, description="Transport protocol number or name.")
     actual_label: Optional[str] = Field(None, description="Ground truth label if known (for verification).")
     features: Dict[str, Any] = Field(..., description="Map of exactly 78 extracted flow metrics.")
+
+
+class SystemLogIngestPayload(BaseModel):
+    log_id: Optional[str] = Field(None, description="Unique UUID for this log entry. Generated if omitted.")
+    timestamp: Optional[str] = Field(None, description="ISO-8601 log timestamp or syslog date.")
+    source_host: Optional[str] = Field("ip-10-0-0-12", description="Originating host or IP address.")
+    service: str = Field(..., description="Service or daemon name (e.g. sshd, sudo, systemd, kernel).")
+    log_type: Optional[str] = Field("GENERAL", description="Log classification (e.g. AUTH_FAILURE, AUTH_SUCCESS, SUDO_EXEC).")
+    severity: Optional[str] = Field("INFO", description="Log severity (DEBUG, INFO, WARNING, ERROR, CRITICAL).")
+    message: str = Field(..., description="Normalized or extracted message string.")
+    raw_log: Optional[str] = Field(None, description="Raw unparsed log line.")
+    metadata: Optional[Dict[str, Any]] = Field(default_factory=dict, description="Structured parsed tokens (ip, user, port, pid).")
+
+
+class SystemLogBatchPayload(BaseModel):
+    logs: List[SystemLogIngestPayload] = Field(..., description="Batch of system logs to ingest atomically.")
+
+
+class TelemetryModeUpdate(BaseModel):
+    mode: str = Field(..., description="Telemetry source mode: 'replay', 'vm_logs', 'vm_flows', 'vm_all'")
 
 
 # ---------------------------------------------------------------------------
@@ -167,9 +200,22 @@ def safe_json_loads(val: Any, default=None):
     if not val or not isinstance(val, str):
         return default
     try:
-        return json.loads(val)
+        return sanitize_json_floats(json.loads(val))
     except Exception:
         return default
+
+
+def sanitize_json_floats(obj: Any) -> Any:
+    """Recursively replace NaN and Inf float values with None to guarantee valid JSON serialization."""
+    if isinstance(obj, float):
+        if math.isnan(obj) or math.isinf(obj):
+            return None
+        return obj
+    elif isinstance(obj, dict):
+        return {k: sanitize_json_floats(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [sanitize_json_floats(item) for item in obj]
+    return obj
 
 
 # ---------------------------------------------------------------------------
@@ -185,6 +231,41 @@ def get_health():
         "timestamp": datetime.datetime.now().isoformat(),
         "database_exists": db_ok,
         "database_path": str(DB_PATH),
+    }
+
+
+@app.get("/api/models/health")
+def get_models_health():
+    """Verify readiness of ML models, preprocessing pipelines, and database."""
+    rf_model_path = PROJECT_ROOT / "models" / "network_detection_model.pkl"
+    rf_meta_path = PROJECT_ROOT / "models" / "network_detection_preprocessing.pkl"
+    if_model_path = PROJECT_ROOT / "models" / "anomaly_detection_model.pkl"
+    if_meta_path = PROJECT_ROOT / "models" / "anomaly_detection_preprocessing.pkl"
+
+    rf_loaded = rf_model_path.is_file() and rf_model_path.stat().st_size > 0 and rf_meta_path.is_file()
+    if_loaded = if_model_path.is_file() and if_model_path.stat().st_size > 0 and if_meta_path.is_file()
+    db_ok = DB_PATH.exists()
+
+    overall_ok = rf_loaded and if_loaded and db_ok
+
+    return {
+        "status": "ok" if overall_ok else "degraded",
+        "timestamp": datetime.datetime.now().isoformat(),
+        "database": {
+            "status": "ok" if db_ok else "missing",
+            "path": str(DB_PATH),
+        },
+        "models": {
+            "network_detection": {
+                "loaded": rf_loaded,
+                "model_file": str(rf_model_path),
+                "features_required": 78,
+            },
+            "anomaly_detection": {
+                "loaded": if_loaded,
+                "model_file": str(if_model_path),
+            },
+        },
     }
 
 
@@ -306,9 +387,62 @@ def get_agents_status():
         "details": f"Path: {DB_PATH.name} ({'Available' if storage_status == 'ONLINE' else 'Unavailable'})",
     })
 
+    # 10. Response Playbooks Engine (Stage 12)
+    agents.append({
+        "id": "response_playbooks",
+        "name": "Response Playbook Engine",
+        "type": "Safe Non-Destructive Decision Engine",
+        "model": "Dry-Run Playbook Rules",
+        "status": "ACTIVE",
+        "details": "Automated incident response recommendations with manual approval gates",
+    })
+
+    # 11. Google Gemini Flash Reasoning Agent (Stage 14)
+    from agents.llm_reasoning.config import (
+        AGENT_NAME as LLM_AGENT_NAME,
+        DEFAULT_GEMINI_MODEL,
+        GEMINI_API_KEY_ENV,
+        GEMINI_ENABLED_ENV,
+        GEMINI_MODEL_ENV,
+    )
+    llm_enabled = os.getenv(GEMINI_ENABLED_ENV, "true").strip().lower() in ("true", "1", "yes", "on")
+    has_key = bool(os.getenv(GEMINI_API_KEY_ENV, "").strip())
+    configured_model = os.getenv(GEMINI_MODEL_ENV, DEFAULT_GEMINI_MODEL)
+    if not llm_enabled:
+        llm_status = "DISABLED"
+        llm_details = f"Reasoning disabled via {GEMINI_ENABLED_ENV}=false"
+    elif has_key:
+        llm_status = "ONLINE"
+        llm_details = f"Active Gemini Flash API ({configured_model})"
+    else:
+        llm_status = "ONLINE_MOCK"
+        llm_details = f"Offline Mock Provider ({configured_model}) — No API key configured"
+
+    agents.append({
+        "id": "llm_reasoning",
+        "name": LLM_AGENT_NAME,
+        "type": "LLM Incident Reasoning & MITRE Mapping",
+        "model": configured_model if has_key else f"mock-{configured_model}",
+        "status": llm_status,
+        "is_mock": not has_key,
+        "details": llm_details,
+    })
+
+    # 11. Remote Victim VM Telemetry Collector
+    agents.append({
+        "id": "vm_sensor",
+        "name": "Remote Victim VM Telemetry Collector",
+        "type": "Live Host & Network Telemetry",
+        "model": "SSH / journalctl / auth.log",
+        "status": "ACTIVE" if CURRENT_TELEMETRY_MODE != "replay" else "STANDBY",
+        "is_mock": False,
+        "details": f"Victim: 45.74.156.54 (10.0.0.12) | Mode: {CURRENT_TELEMETRY_MODE}",
+    })
+
     return {
         "timestamp": datetime.datetime.now().isoformat(),
-        "mode": "Simulated Dataset Replay (Emulated Real-Time Tap)",
+        "mode": CURRENT_TELEMETRY_MODE,
+        "telemetry_mode": CURRENT_TELEMETRY_MODE,
         "is_live_packet_capture": False,
         "agents": agents,
     }
@@ -408,6 +542,11 @@ def get_overview_statistics():
         if "threat_investigations" in tables:
             total_investigations = conn.execute("SELECT COUNT(*) FROM threat_investigations").fetchone()[0]
 
+        total_system_logs = 0
+        if "system_logs" in tables:
+            sl_row = conn.execute("SELECT COUNT(*) FROM system_logs").fetchone()
+            total_system_logs = sl_row[0] if sl_row else 0
+
         return {
             "total_events": total_events,
             "benign_events": benign_count,
@@ -418,6 +557,8 @@ def get_overview_statistics():
             "open_incidents": open_incidents,
             "total_assessments": total_assessments,
             "total_investigations": total_investigations,
+            "total_system_logs": total_system_logs,
+            "telemetry_mode": CURRENT_TELEMETRY_MODE,
             "avg_latency_ms": avg_latency,
             "earliest_timestamp": earliest_ts,
             "latest_timestamp": latest_ts,
@@ -580,12 +721,28 @@ def get_event_detail(event_id: str):
                 clean_key = col.replace("_json", "")
                 investigation[clean_key] = safe_json_loads(investigation.get(col), default=[] if "signals" in clean_key or "reasoning" in clean_key or "steps" in clean_key else {})
 
+        # Response Playbook (Stage 12)
+        pb_row = conn.execute("SELECT * FROM response_playbooks WHERE event_id = ?", (event_id,)).fetchone()
+        playbook = None
+        if pb_row:
+            from storage.query import _playbook_row_to_dict
+            playbook = _playbook_row_to_dict(pb_row)
+
+        # LLM Reasoning (Stage 14)
+        reas_row = conn.execute("SELECT * FROM llm_reasoning WHERE event_id = ? ORDER BY id DESC LIMIT 1", (event_id,)).fetchone()
+        reasoning = None
+        if reas_row:
+            from storage.query import _reasoning_row_to_dict
+            reasoning = _reasoning_row_to_dict(reas_row)
+
         return {
             "event": ev_dict,
             "alerts": alerts,
             "incident": incident,
             "threat_assessment": assessment,
             "threat_investigation": investigation,
+            "playbook": playbook,
+            "llm_reasoning": reasoning,
         }
     finally:
         conn.close()
@@ -673,7 +830,7 @@ def get_alerts(
             d = dict(r)
             d["network_context"] = safe_json_loads(d.get("network_context_json"))
             d["class_probabilities"] = safe_json_loads(d.get("class_probabilities_json"))
-            alerts.append(d)
+            alerts.append(sanitize_json_floats(d))
         return alerts
     finally:
         conn.close()
@@ -1012,6 +1169,105 @@ def api_enrich_investigation(
 
 
 # ---------------------------------------------------------------------------
+# Stage 12: Response Playbooks Endpoints
+# ---------------------------------------------------------------------------
+
+class PlaybookApprovalRequest(BaseModel):
+    approved: bool = Field(True, description="True to approve recommendation, False to reject")
+    notes: Optional[str] = Field(None, description="Optional analyst rationale or instructions")
+    analyst_id: Optional[str] = Field("analyst", description="Analyst username or identifier")
+
+
+@app.get("/api/playbooks")
+def api_get_playbooks(
+    limit: int = Query(50, ge=1, le=500),
+    status: Optional[str] = None,
+    severity: Optional[str] = None,
+):
+    """Fetch response playbook recommendations ordered by timestamp."""
+    from storage.query import ResponsePlaybookQueryStore
+    if not DB_PATH.exists():
+        return {"total": 0, "playbooks": [], "stats": {}}
+    with ResponsePlaybookQueryStore() as q:
+        playbooks = q.get_playbooks(limit=limit, status=status, severity=severity)
+        stats = q.summary_stats_playbooks()
+    return {"total": len(playbooks), "playbooks": playbooks, "stats": stats}
+
+
+@app.get("/api/playbooks/{playbook_id}")
+def api_get_playbook(playbook_id: str):
+    """Fetch single response playbook by playbook UUID or triggering event UUID."""
+    from storage.query import ResponsePlaybookQueryStore
+    if not DB_PATH.exists():
+        raise HTTPException(status_code=404, detail="Database not found")
+    with ResponsePlaybookQueryStore() as q:
+        pb = q.get_playbook_by_id(playbook_id) or q.get_playbook_by_event_id(playbook_id)
+    if not pb:
+        raise HTTPException(status_code=404, detail=f"Response playbook '{playbook_id}' not found.")
+    return pb
+
+
+@app.post("/api/playbooks/{playbook_id}/approve")
+def api_approve_playbook(
+    playbook_id: str,
+    req: PlaybookApprovalRequest,
+):
+    """Record analyst approval or rejection decision for a response playbook (dry-run mode)."""
+    from storage.db import AlertStore
+    from storage.query import ResponsePlaybookQueryStore
+    if not DB_PATH.exists():
+        raise HTTPException(status_code=404, detail="Database not found")
+    with AlertStore() as store:
+        ok = store.update_playbook_approval(
+            playbook_id=playbook_id,
+            approved=req.approved,
+            analyst_id=req.analyst_id or "analyst",
+            notes=req.notes or "",
+        )
+    if not ok:
+        raise HTTPException(status_code=404, detail=f"Response playbook '{playbook_id}' not found.")
+    with ResponsePlaybookQueryStore() as q:
+        updated = q.get_playbook_by_id(playbook_id)
+    return updated
+
+
+# ---------------------------------------------------------------------------
+# Stage 14: Google Gemini Flash LLM Reasoning Endpoints
+# ---------------------------------------------------------------------------
+
+@app.get("/api/reasoning")
+def api_get_reasoning(
+    limit: int = Query(50, ge=1, le=500),
+    status: Optional[str] = None,
+):
+    """Fetch recent Google Gemini Flash reasoning records."""
+    from storage.query import LLMReasoningQueryStore
+    if not DB_PATH.exists():
+        return {"total": 0, "reasoning": [], "stats": {}}
+    with LLMReasoningQueryStore() as q:
+        items = q.get_recent_reasoning(limit=limit, status=status)
+        stats = q.summary_stats_reasoning()
+    return {"total": len(items), "reasoning": items, "stats": stats}
+
+
+@app.get("/api/reasoning/{target_id}")
+def api_get_reasoning_detail(target_id: str):
+    """Fetch single reasoning record by reasoning UUID or triggering event UUID."""
+    from storage.query import LLMReasoningQueryStore
+    if not DB_PATH.exists():
+        raise HTTPException(status_code=404, detail="Database not found")
+    with LLMReasoningQueryStore() as q:
+        item = (
+            q.get_reasoning_by_id(target_id)
+            or q.get_reasoning_by_event_id(target_id)
+            or q.get_reasoning_by_incident_id(target_id)
+        )
+    if not item:
+        raise HTTPException(status_code=404, detail=f"LLM reasoning for identifier '{target_id}' not found.")
+    return item
+
+
+# ---------------------------------------------------------------------------
 # Phase 1: Live VM Sensor Flow Ingestion Endpoint
 # ---------------------------------------------------------------------------
 
@@ -1087,7 +1343,8 @@ async def ingest_flow_event(
             invalid_features.append(f)
         else:
             try:
-                normalized_features[f] = float(val)
+                f_val = float(val)
+                normalized_features[f] = f_val
             except (ValueError, TypeError):
                 invalid_features.append(f)
 
@@ -1098,6 +1355,29 @@ async def ingest_flow_event(
                 "error": "Non-numeric or null feature values",
                 "invalid_count": len(invalid_features),
                 "invalid_features": invalid_features[:10],
+            },
+        )
+
+    # Validate NaN / Infinite count (maximum 8 allowed for cell-level median imputation)
+    import math
+    nan_inf_count = sum(1 for v in normalized_features.values() if math.isnan(v) or math.isinf(v))
+    if nan_inf_count > 8:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail={
+                "error": "Excessive NaN or Inf feature values. Maximum 8 permitted before row is deemed malformed.",
+                "nan_inf_count": nan_inf_count,
+                "max_allowed": 8,
+            },
+        )
+
+    # Validate non-negative Flow Duration
+    if "Flow Duration" in normalized_features and normalized_features["Flow Duration"] < 0:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail={
+                "error": "Invalid negative Flow Duration value (microseconds scale must be non-negative)",
+                "value": normalized_features["Flow Duration"],
             },
         )
 
@@ -1130,11 +1410,16 @@ async def ingest_flow_event(
         except Exception:
             pass
 
+    source_val = payload.source or "live_sensor"
+    if payload.sensor_id:
+        source_val = f"{source_val}:{payload.sensor_id}"
+
     event_dict = {
         "event_id": event_id,
         "event_type": "network_flow",
         "timestamp": payload.timestamp or datetime.datetime.now().isoformat(),
-        "source": payload.source or "live_sensor",
+        "source": source_val,
+        "sensor_id": payload.sensor_id,
         "sequence": payload.sequence or 0,
         "actual_label": payload.actual_label,
         "src_ip": payload.src_ip,
@@ -1145,9 +1430,9 @@ async def ingest_flow_event(
         "features": normalized_features,
     }
 
-    # 5. Process through the full existing SOC pipeline
+    # 5. Process through the full existing SOC pipeline (non-blocking threadpool)
     try:
-        result = pipeline.process_event(event_dict, persist=True)
+        result = await asyncio.to_thread(pipeline.process_event, event_dict, True)
     except Exception as exc:
         logger.error("Pipeline failure for ingested flow event %s: %s", event_id, exc, exc_info=True)
         raise HTTPException(
@@ -1162,6 +1447,7 @@ async def ingest_flow_event(
             "status": "ACCEPTED",
             "message": "Flow event successfully validated, analyzed, and persisted",
             "event_id": event_id,
+            "sensor_id": payload.sensor_id,
             "source": event_dict["source"],
             "timestamp": event_dict["timestamp"],
             "network_context": {
@@ -1201,9 +1487,179 @@ async def ingest_flow_event(
                 "summary": result["investigation"].get("summary"),
             } if result.get("investigation") else None,
             "investigation_triggered": result["investigation_triggered"],
+            "response_playbook": {
+                "playbook_id": result["playbook"]["playbook_id"],
+                "status": result["playbook"]["status"],
+                "rule_id": result["playbook"]["rule_id"],
+                "recommended_actions": result["playbook"]["recommended_actions"],
+            } if result.get("playbook") else None,
+            "playbook_triggered": result.get("playbook_triggered", False),
+            "llm_reasoning": {
+                "reasoning_id": result["reasoning"]["reasoning_id"],
+                "status": result["reasoning"]["status"],
+                "model_name": result["reasoning"]["model_name"],
+                "is_mock": result["reasoning"].get("is_mock", False),
+                "summary": result["reasoning"]["output"]["summary"] if result["reasoning"].get("output") else None,
+                "likely_attack": result["reasoning"]["output"]["likely_attack"] if result["reasoning"].get("output") else None,
+                "confidence": result["reasoning"]["output"]["confidence"] if result["reasoning"].get("output") else None,
+                "mitre_techniques": result["reasoning"]["output"]["mitre_techniques"] if result["reasoning"].get("output") else [],
+            } if result.get("reasoning") else None,
             "persisted": result["persisted"],
+            "content_inspection": result.get("content_inspection"),
+            "sequence_incident": result.get("sequence_incident"),
         },
     )
+
+
+# ---------------------------------------------------------------------------
+# System Log Ingestion Endpoints (Phase 2 & 3: Host Telemetry)
+# ---------------------------------------------------------------------------
+
+@app.post("/api/ingest/log", status_code=status.HTTP_201_CREATED)
+async def ingest_system_log(
+    payload: SystemLogIngestPayload,
+    _auth_key: str = Depends(verify_sensor_key),
+):
+    """
+    Ingest a single normalized system log event from the victim VM.
+    Routes through unified SOCPipeline for stateful correlation and Content Inspection.
+    """
+    pipeline = get_pipeline()
+    log_dict = payload.model_dump()
+    result = await asyncio.to_thread(pipeline.process_system_log, log_dict, True)
+    return {
+        "status": "success",
+        "log_id": log_dict.get("log_id"),
+        "service": log_dict.get("service"),
+        "log_type": log_dict.get("log_type"),
+        "severity": log_dict.get("severity"),
+        "timestamp": log_dict.get("timestamp"),
+        "content_inspection": result.get("content_inspection"),
+        "sequence_incident": result.get("sequence_incident"),
+    }
+
+
+@app.post("/api/ingest/logs", status_code=status.HTTP_201_CREATED)
+async def ingest_system_logs_batch(
+    payload: SystemLogBatchPayload,
+    _auth_key: str = Depends(verify_sensor_key),
+):
+    """
+    Atomic batch ingestion of normalized system logs from the victim VM.
+    Routes logs through unified SOCPipeline to maintain temporal correlation state.
+    """
+    pipeline = get_pipeline()
+    logs_list = [l.model_dump() for l in payload.logs]
+    sequence_incidents = []
+    for log_dict in logs_list:
+        res = await asyncio.to_thread(pipeline.process_system_log, log_dict, True)
+        if res.get("sequence_incident"):
+            sequence_incidents.append(res["sequence_incident"])
+
+    return {
+        "status": "success",
+        "count_received": len(logs_list),
+        "count_inserted": len(logs_list),
+        "correlated_sequences": sequence_incidents,
+    }
+
+
+@app.get("/api/logs")
+def get_system_logs(
+    limit: int = Query(50, ge=1, le=500),
+    service: Optional[str] = None,
+    log_type: Optional[str] = None,
+    severity: Optional[str] = None,
+    source_host: Optional[str] = None,
+):
+    """
+    Fetch recent normalized system logs from the victim VM.
+    """
+    from storage.query import SystemLogQueryStore
+    if not DB_PATH.exists():
+        return {"total": 0, "logs": [], "stats": {}}
+    with SystemLogQueryStore() as q:
+        logs = q.get_recent_logs(
+            limit=limit,
+            service=service,
+            log_type=log_type,
+            severity=severity,
+            source_host=source_host,
+        )
+        stats = q.summary_stats_logs()
+    return {"total": len(logs), "logs": logs, "stats": stats}
+
+
+@app.get("/api/logs/stats")
+def get_system_logs_stats():
+    """Summary statistics of collected system logs."""
+    from storage.query import SystemLogQueryStore
+    if not DB_PATH.exists():
+        return {"total_logs": 0, "by_service": {}, "by_type": {}, "by_severity": {}}
+    with SystemLogQueryStore() as q:
+        return q.summary_stats_logs()
+
+
+# ---------------------------------------------------------------------------
+# Telemetry Mode & Sensor Status Management (Phase 4)
+# ---------------------------------------------------------------------------
+
+@app.get("/api/sensor/status")
+def get_sensor_status():
+    """
+    Retrieve real-time telemetry collector status, including victim VM info,
+    current mode, and collection metrics.
+    """
+    state_file = PROJECT_ROOT / "logs" / "vm_sensor_state.json"
+    state_data: Dict[str, Any] = {}
+    if state_file.exists():
+        try:
+            with open(state_file, "r", encoding="utf-8") as f:
+                state_data = json.load(f)
+        except Exception:
+            state_data = {}
+
+    from storage.query import SystemLogQueryStore
+    log_stats: Dict[str, Any] = {}
+    if DB_PATH.exists():
+        try:
+            with SystemLogQueryStore() as q:
+                log_stats = q.summary_stats_logs()
+        except Exception:
+            pass
+
+    return {
+        "timestamp": datetime.datetime.now().isoformat(),
+        "telemetry_mode": CURRENT_TELEMETRY_MODE,
+        "supported_modes": ["replay", "vm_logs", "vm_flows", "vm_all"],
+        "victim_host": os.environ.get("SOC_VM_HOST", "45.74.156.54"),
+        "victim_private_ip": "10.0.0.12",
+        "victim_user": os.environ.get("SOC_VM_USER", "ubuntu"),
+        "collector_state": state_data,
+        "logs_summary": log_stats,
+    }
+
+
+@app.post("/api/sensor/mode")
+def set_sensor_mode(payload: TelemetryModeUpdate):
+    """
+    Dynamically update the active telemetry mode ('replay', 'vm_logs', 'vm_flows', 'vm_all').
+    """
+    global CURRENT_TELEMETRY_MODE
+    valid_modes = {"replay", "vm_logs", "vm_flows", "vm_all"}
+    clean_mode = payload.mode.strip().lower()
+    if clean_mode not in valid_modes:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid telemetry mode '{payload.mode}'. Supported: {sorted(valid_modes)}",
+        )
+    CURRENT_TELEMETRY_MODE = clean_mode
+    logger.info("Telemetry source mode updated to: %s", CURRENT_TELEMETRY_MODE)
+    return {
+        "status": "success",
+        "telemetry_mode": CURRENT_TELEMETRY_MODE,
+        "updated_at": datetime.datetime.now().isoformat(),
+    }
 
 
 if __name__ == "__main__":

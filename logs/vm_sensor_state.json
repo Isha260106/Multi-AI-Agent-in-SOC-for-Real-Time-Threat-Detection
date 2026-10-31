@@ -1,0 +1,28 @@
+{
+  "auth_log_offset": 2166693,
+  "auth_log_inode": 922,
+  "journal_cursor": "s=96806919b0854401a29175caa04a6c33;i=95fb;b=a0d2b76f46fa4c38b34174a034de03b3;m=5d98c199;t=65f26f2195bd5;x=12ee3f4d7abb2f02",
+  "total_logs_collected": 26342,
+  "total_logs_submitted": 25827,
+  "last_collected_at": "2026-11-01T00:12:36.374138",
+  "last_log_summary": {
+    "timestamp": "2026-10-31T23:48:55.408085",
+    "service": "ssh",
+    "log_type": "AUTH_SUCCESS",
+    "message": "Accepted publickey for ubuntu from 27.111.72.7 port 64241 ssh2: ED25519 SHA256:Q"
+  },
+  "mode": "vm_logs",
+  "last_poll_time": "2026-11-01T00:12:31.209780",
+  "errors_count": 0,
+  "last_error": null,
+  "last_poll_result": {
+    "timestamp": "2026-11-01T00:12:31.209780",
+    "mode": "vm_logs",
+    "logs_collected": 80,
+    "logs_submitted": 80,
+    "flows_collected": 0,
+    "flows_submitted": 0,
+    "error": null
+  },
+  "is_running": true
+}

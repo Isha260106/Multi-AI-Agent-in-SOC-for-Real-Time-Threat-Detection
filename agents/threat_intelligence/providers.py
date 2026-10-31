@@ -25,6 +25,7 @@ import logging
 import os
 import re
 import socket
+import ipaddress
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -68,6 +69,28 @@ if not logger.handlers:
 IPV4_REGEX = re.compile(r"^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$")
 
 
+PRIVATE_INTERNAL_NETWORKS = (
+    ipaddress.ip_network("10.0.0.0/8"),
+    ipaddress.ip_network("172.16.0.0/12"),
+    ipaddress.ip_network("192.168.0.0/16"),
+    ipaddress.ip_network("127.0.0.0/8"),
+    ipaddress.ip_network("169.254.0.0/16"),
+)
+
+
+def is_private_or_internal_ip(ip_str: str) -> bool:
+    """
+    Check if an IPv4/IPv6 string is a private RFC 1918, loopback, or link-local address
+    that must never be sent to external threat intelligence providers.
+    """
+    clean = str(ip_str).strip()
+    try:
+        ip_obj = ipaddress.ip_address(clean)
+        return any(ip_obj in net for net in PRIVATE_INTERNAL_NETWORKS)
+    except ValueError:
+        return False
+
+
 # ===========================================================================
 # Base Provider Interface
 # ===========================================================================
@@ -99,6 +122,30 @@ class BaseIntelProvider(abc.ABC):
         last_checked = now.isoformat()
         expires_at = (now + datetime.timedelta(seconds=ttl)).isoformat()
         return last_checked, expires_at
+
+    def _create_private_ip_result(self, clean_val: str) -> Dict[str, Any]:
+        """Return a standardized local result for private RFC 1918 or internal addresses."""
+        last_checked, expires_at = self._calc_expiration(86400 * 7)  # 7-day cache
+        return {
+            "indicator_type": "ip",
+            "indicator_value": clean_val,
+            "provider": "LocalPrivateIPClassifier",
+            "verdict": VERDICT_NO_KNOWN_REPORTS,
+            "reputation_score": 0.0,
+            "evidence_links": [],
+            "raw_response": {
+                "status": "internal_reserved",
+                "is_private": True,
+                "note": "RFC 1918 / Loopback / Link-Local / Reserved private IP address",
+            },
+            "last_checked": last_checked,
+            "expires_at": expires_at,
+            "is_mock": False,
+            "limitations": [
+                "Address is an internal / private network IP (RFC 1918 / link-local / loopback). "
+                "External threat intelligence queries were omitted to prevent internal network topology disclosure."
+            ],
+        }
 
 
 # ===========================================================================
@@ -177,6 +224,8 @@ class MockIntelProvider(BaseIntelProvider):
 
         # IP Lookups
         if clean_type == "ip":
+            if is_private_or_internal_ip(clean_val) and clean_val not in self.MOCK_IP_FIXTURES:
+                return self._create_private_ip_result(clean_val)
             fixture = self.MOCK_IP_FIXTURES.get(clean_val)
             if fixture:
                 verdict = fixture["verdict"]
@@ -314,6 +363,10 @@ class AbuseIPDBProvider(BaseIntelProvider):
                 "is_mock": False,
                 "limitations": [f"AbuseIPDB does not support indicator type '{clean_type}'."],
             }
+
+        # RFC 1918 / Internal IP Protection
+        if is_private_or_internal_ip(clean_val):
+            return self._create_private_ip_result(clean_val)
 
         # Check API key configuration
         api_key = self._get_api_key()
@@ -505,6 +558,10 @@ class VirusTotalProvider(BaseIntelProvider):
                 "is_mock": False,
                 "limitations": [f"VirusTotal provider does not index indicator type '{clean_type}'."],
             }
+
+        # RFC 1918 / Internal IP Protection
+        if is_private_or_internal_ip(clean_val):
+            return self._create_private_ip_result(clean_val)
 
         api_key = self._get_api_key()
         if not api_key:

@@ -343,6 +343,34 @@ class TestThreatIntelligence(unittest.TestCase):
             self.assertIn("MALICIOUS", stats["verdicts"])
             self.assertIn("NO_KNOWN_REPORTS", stats["verdicts"])
 
+    # -----------------------------------------------------------------------
+    # 10. Private IP Isolation & Zero External Transmission Test
+    # -----------------------------------------------------------------------
+    def test_private_ip_isolation_and_no_leakage(self):
+        """Verify RFC 1918 addresses are never transmitted to external threat intel APIs."""
+        abuse_provider = AbuseIPDBProvider()
+        vt_provider = VirusTotalProvider()
+        agent = ThreatIntelligenceAgent(offline_mode=False, db_path=self.temp_db_path)
+
+        private_ips = ["10.10.10.100", "10.10.10.20", "192.168.56.10", "172.16.1.5", "127.0.0.1"]
+
+        with patch("urllib.request.urlopen") as mock_urlopen:
+            for ip in private_ips:
+                res_abuse = abuse_provider.lookup("ip", ip)
+                self.assertEqual(res_abuse["provider"], "LocalPrivateIPClassifier")
+                self.assertEqual(res_abuse["verdict"], VERDICT_NO_KNOWN_REPORTS)
+                self.assertTrue(res_abuse["raw_response"]["is_private"])
+
+                res_vt = vt_provider.lookup("ip", ip)
+                self.assertEqual(res_vt["provider"], "LocalPrivateIPClassifier")
+                self.assertEqual(res_vt["verdict"], VERDICT_NO_KNOWN_REPORTS)
+
+                res_agent = agent.lookup("ip", ip)
+                self.assertEqual(res_agent["provider"], "LocalPrivateIPClassifier")
+
+            # Crucial assertion: urlopen was NEVER called for private IPs
+            mock_urlopen.assert_not_called()
+
 
 if __name__ == "__main__":
     unittest.main()

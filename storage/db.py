@@ -184,6 +184,67 @@ CREATE TABLE IF NOT EXISTS threat_intel_cache (
 );
 """
 
+_CREATE_RESPONSE_PLAYBOOKS = """
+CREATE TABLE IF NOT EXISTS response_playbooks (
+    id                          INTEGER PRIMARY KEY AUTOINCREMENT,
+    playbook_id                 TEXT UNIQUE NOT NULL,
+    event_id                    TEXT UNIQUE NOT NULL,
+    threat_category             TEXT NOT NULL,
+    severity                    TEXT NOT NULL,
+    status                      TEXT NOT NULL,
+    dry_run                     INTEGER NOT NULL DEFAULT 1,
+    rule_id                     TEXT NOT NULL,
+    recommended_actions_json    TEXT NOT NULL,
+    triggering_evidence_json    TEXT NOT NULL,
+    approval_status             TEXT NOT NULL,
+    analyst_notes               TEXT NULL,
+    audit_trail_json            TEXT NOT NULL,
+    created_at                  TEXT NOT NULL,
+    updated_at                  TEXT NOT NULL,
+    FOREIGN KEY(event_id) REFERENCES events(event_id)
+);
+"""
+
+_CREATE_LLM_REASONING = """
+CREATE TABLE IF NOT EXISTS llm_reasoning (
+    id                          INTEGER PRIMARY KEY AUTOINCREMENT,
+    reasoning_id                TEXT UNIQUE NOT NULL,
+    incident_id                 TEXT NULL,
+    event_id                    TEXT NULL,
+    model_name                  TEXT NOT NULL,
+    status                      TEXT NOT NULL,
+    summary                     TEXT NOT NULL,
+    likely_attack               TEXT NOT NULL,
+    confidence                  REAL NOT NULL,
+    mitre_techniques_json       TEXT NOT NULL,
+    evidence_json               TEXT NOT NULL,
+    uncertainties_json          TEXT NOT NULL,
+    recommended_actions_json    TEXT NOT NULL,
+    additional_evidence_json    TEXT NOT NULL,
+    raw_error                   TEXT NULL,
+    is_mock                     INTEGER DEFAULT 0,
+    processing_time_s           REAL DEFAULT 0.0,
+    created_at                  TEXT NOT NULL,
+    FOREIGN KEY(event_id) REFERENCES events(event_id)
+);
+"""
+
+_CREATE_SYSTEM_LOGS = """
+CREATE TABLE IF NOT EXISTS system_logs (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    log_id        TEXT UNIQUE NOT NULL,
+    timestamp     TEXT NOT NULL,
+    source_host   TEXT NOT NULL,
+    service       TEXT NOT NULL,
+    log_type      TEXT NOT NULL,
+    severity      TEXT NOT NULL,
+    message       TEXT NOT NULL,
+    raw_log       TEXT NOT NULL,
+    metadata_json TEXT,
+    ingested_at   TEXT NOT NULL
+);
+"""
+
 # Indexes for the most common query patterns
 _CREATE_INDEXES = [
     "CREATE INDEX IF NOT EXISTS idx_alerts_timestamp  ON alerts(timestamp);",
@@ -205,6 +266,17 @@ _CREATE_INDEXES = [
     "CREATE INDEX IF NOT EXISTS idx_intel_cache_indicator    ON threat_intel_cache(indicator_value);",
     "CREATE INDEX IF NOT EXISTS idx_intel_cache_expires      ON threat_intel_cache(expires_at);",
     "CREATE INDEX IF NOT EXISTS idx_intel_cache_provider     ON threat_intel_cache(provider);",
+    "CREATE INDEX IF NOT EXISTS idx_playbooks_status         ON response_playbooks(status);",
+    "CREATE INDEX IF NOT EXISTS idx_playbooks_severity       ON response_playbooks(severity);",
+    "CREATE INDEX IF NOT EXISTS idx_playbooks_event_id       ON response_playbooks(event_id);",
+    "CREATE INDEX IF NOT EXISTS idx_llm_reasoning_event_id   ON llm_reasoning(event_id);",
+    "CREATE INDEX IF NOT EXISTS idx_llm_reasoning_incident_id ON llm_reasoning(incident_id);",
+    "CREATE INDEX IF NOT EXISTS idx_llm_reasoning_status     ON llm_reasoning(status);",
+    "CREATE INDEX IF NOT EXISTS idx_system_logs_timestamp    ON system_logs(timestamp);",
+    "CREATE INDEX IF NOT EXISTS idx_system_logs_source       ON system_logs(source_host);",
+    "CREATE INDEX IF NOT EXISTS idx_system_logs_service      ON system_logs(service);",
+    "CREATE INDEX IF NOT EXISTS idx_system_logs_type         ON system_logs(log_type);",
+    "CREATE INDEX IF NOT EXISTS idx_system_logs_severity     ON system_logs(severity);",
 ]
 
 # ---------------------------------------------------------------------------
@@ -258,6 +330,33 @@ _INSERT_THREAT_INTEL = """
 INSERT OR REPLACE INTO threat_intel_cache
     (indicator_type, indicator_value, provider, verdict, reputation_score,
      raw_response_json, evidence_links_json, last_checked, expires_at, is_mock)
+VALUES
+    (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+"""
+
+_INSERT_PLAYBOOK = """
+INSERT OR REPLACE INTO response_playbooks
+    (playbook_id, event_id, threat_category, severity, status, dry_run, rule_id,
+     recommended_actions_json, triggering_evidence_json, approval_status,
+     analyst_notes, audit_trail_json, created_at, updated_at)
+VALUES
+    (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+"""
+
+_INSERT_LLM_REASONING = """
+INSERT OR REPLACE INTO llm_reasoning
+    (reasoning_id, incident_id, event_id, model_name, status,
+     summary, likely_attack, confidence, mitre_techniques_json,
+     evidence_json, uncertainties_json, recommended_actions_json,
+     additional_evidence_json, raw_error, is_mock, processing_time_s, created_at)
+VALUES
+    (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+"""
+
+_INSERT_SYSTEM_LOG = """
+INSERT OR IGNORE INTO system_logs
+    (log_id, timestamp, source_host, service, log_type,
+     severity, message, raw_log, metadata_json, ingested_at)
 VALUES
     (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 """
@@ -316,6 +415,9 @@ class AlertStore:
         cur.execute(_CREATE_ASSESSMENTS)
         cur.execute(_CREATE_INVESTIGATIONS)
         cur.execute(_CREATE_THREAT_INTEL_CACHE)
+        cur.execute(_CREATE_RESPONSE_PLAYBOOKS)
+        cur.execute(_CREATE_LLM_REASONING)
+        cur.execute(_CREATE_SYSTEM_LOGS)
         for idx_sql in _CREATE_INDEXES:
             cur.execute(idx_sql)
         self._conn.commit()
@@ -727,6 +829,255 @@ class AlertStore:
         """Return current number of rows in the threat_intel_cache table."""
         row = self._conn.execute("SELECT COUNT(*) FROM threat_intel_cache;").fetchone()
         return row[0] if row else 0
+
+    def playbook_count(self) -> int:
+        """Return current number of rows in the response_playbooks table."""
+        row = self._conn.execute("SELECT COUNT(*) FROM response_playbooks;").fetchone()
+        return row[0] if row else 0
+
+    def save_playbook(self, playbook: dict) -> bool:
+        """
+        Insert or update a response playbook recommendation in response_playbooks.
+        """
+        p_id = playbook.get("playbook_id")
+        e_id = playbook.get("event_id")
+        if not p_id or not e_id:
+            raise ValueError("Playbook record missing 'playbook_id' or 'event_id'.")
+
+        actions_json = json.dumps(playbook.get("recommended_actions", []), ensure_ascii=False)
+        evidence_json = json.dumps(playbook.get("triggering_evidence", []), ensure_ascii=False)
+        audit_json = json.dumps(playbook.get("audit_trail", []), ensure_ascii=False)
+        dry_run = 1 if playbook.get("dry_run", True) else 0
+
+        now = datetime.datetime.now().isoformat()
+        created_at = playbook.get("created_at") or now
+        updated_at = playbook.get("updated_at") or now
+
+        try:
+            cur = self._conn.execute(
+                _INSERT_PLAYBOOK,
+                (
+                    p_id,
+                    e_id,
+                    playbook.get("threat_category", "Benign"),
+                    playbook.get("severity", "LOW"),
+                    playbook.get("status", "RECOMMENDATION_ONLY"),
+                    dry_run,
+                    playbook.get("rule_id", "DEFAULT"),
+                    actions_json,
+                    evidence_json,
+                    playbook.get("approval_status", "RECOMMENDATION_ONLY"),
+                    playbook.get("analyst_notes"),
+                    audit_json,
+                    created_at,
+                    updated_at,
+                ),
+            )
+            self._conn.commit()
+            return cur.rowcount > 0
+        except sqlite3.Error as exc:
+            _log.error("Failed to save playbook for event_id=%s: %s", e_id, exc)
+            raise
+
+    def update_playbook_approval(
+        self,
+        playbook_id: str,
+        approved: bool,
+        analyst_id: str = "analyst",
+        notes: str = "",
+    ) -> bool:
+        """
+        Update approval status and append an audit log entry for a response playbook.
+        """
+        cur = self._conn.execute(
+            "SELECT audit_trail_json FROM response_playbooks WHERE playbook_id = ?;",
+            (playbook_id,),
+        )
+        row = cur.fetchone()
+        if not row:
+            return False
+
+        try:
+            audit_trail = json.loads(row[0]) if row[0] else []
+        except Exception:
+            audit_trail = []
+
+        now_iso = datetime.datetime.now().isoformat()
+        new_status = "APPROVED" if approved else "REJECTED"
+        audit_trail.append({
+            "timestamp": now_iso,
+            "action": f"MANUAL_DECISION_{new_status}",
+            "actor": analyst_id,
+            "approved": approved,
+            "notes": notes or ("Approved by analyst." if approved else "Rejected by analyst."),
+        })
+
+        cur_up = self._conn.execute(
+            """
+            UPDATE response_playbooks
+            SET status = ?, approval_status = ?, analyst_notes = ?, audit_trail_json = ?, updated_at = ?
+            WHERE playbook_id = ?;
+            """,
+            (
+                new_status,
+                new_status,
+                notes,
+                json.dumps(audit_trail, ensure_ascii=False),
+                now_iso,
+                playbook_id,
+            ),
+        )
+        self._conn.commit()
+        return cur_up.rowcount > 0
+
+    def llm_reasoning_count(self) -> int:
+        """Return current number of rows in the llm_reasoning table."""
+        row = self._conn.execute("SELECT COUNT(*) FROM llm_reasoning;").fetchone()
+        return row[0] if row else 0
+
+    def save_llm_reasoning(self, report: dict) -> bool:
+        """
+        Insert or replace an LLM reasoning report into llm_reasoning table.
+        """
+        r_id = report.get("reasoning_id")
+        if not r_id:
+            raise ValueError("Reasoning record is missing 'reasoning_id'.")
+
+        output = report.get("output") or {}
+        if hasattr(output, "model_dump"):
+            output = output.model_dump()
+        elif not isinstance(output, dict):
+            output = {}
+
+        inc_id = report.get("incident_id") or output.get("incident_id")
+        evt_id = report.get("event_id")
+        model_name = report.get("model_name", "gemini-2.5-flash")
+        status = report.get("status", "SUCCESS")
+        summary = output.get("summary", "")
+        likely_attack = output.get("likely_attack", "")
+        confidence = float(output.get("confidence", 0.5))
+
+        mitre_json = json.dumps(output.get("mitre_techniques", []), ensure_ascii=False)
+        evidence_json = json.dumps(output.get("evidence", []), ensure_ascii=False)
+        uncertainties_json = json.dumps(output.get("uncertainties", []), ensure_ascii=False)
+        actions_json = json.dumps(output.get("recommended_actions", []), ensure_ascii=False)
+        additional_json = json.dumps(output.get("additional_evidence_needed", []), ensure_ascii=False)
+
+        raw_error = report.get("raw_error")
+        is_mock = 1 if report.get("is_mock") else 0
+        proc_time = float(report.get("processing_time_s", 0.0))
+        created_at = report.get("created_at") or datetime.datetime.now().isoformat()
+
+        try:
+            cur = self._conn.execute(
+                _INSERT_LLM_REASONING,
+                (
+                    r_id,
+                    inc_id,
+                    evt_id,
+                    model_name,
+                    status,
+                    summary,
+                    likely_attack,
+                    confidence,
+                    mitre_json,
+                    evidence_json,
+                    uncertainties_json,
+                    actions_json,
+                    additional_json,
+                    raw_error,
+                    is_mock,
+                    proc_time,
+                    created_at,
+                ),
+            )
+            self._conn.commit()
+            return cur.rowcount > 0
+        except sqlite3.Error as exc:
+            _log.error("Failed to save llm_reasoning r_id=%s: %s", r_id, exc)
+            raise
+
+    # ------------------------------------------------------------------
+    # Write: system_logs
+    # ------------------------------------------------------------------
+
+    def save_system_log(self, log_entry: dict) -> bool:
+        """
+        Insert a host/system log entry into the system_logs table.
+
+        Args:
+            log_entry: Dictionary with log_id, timestamp, source_host, service,
+                       log_type, severity, message, raw_log, metadata_json/metadata.
+
+        Returns:
+            True if inserted, False if duplicate log_id was ignored.
+        """
+        log_id = log_entry.get("log_id") or str(uuid.uuid4())
+        ts = log_entry.get("timestamp") or datetime.datetime.now().isoformat()
+        host = log_entry.get("source_host", "unknown")
+        service = log_entry.get("service", "system")
+        log_type = log_entry.get("log_type", "GENERAL")
+        sev = log_entry.get("severity", "INFO")
+        msg = log_entry.get("message", "")
+        raw = log_entry.get("raw_log", msg)
+        meta = log_entry.get("metadata_json") or log_entry.get("metadata", {})
+        if isinstance(meta, (dict, list)):
+            meta_json = json.dumps(meta, ensure_ascii=False)
+        else:
+            meta_json = str(meta)
+        ingested_at = log_entry.get("ingested_at") or datetime.datetime.now().isoformat()
+
+        try:
+            cur = self._conn.execute(
+                _INSERT_SYSTEM_LOG,
+                (log_id, ts, host, service, log_type, sev, msg, raw, meta_json, ingested_at),
+            )
+            self._conn.commit()
+            return cur.rowcount > 0
+        except sqlite3.Error as exc:
+            _log.error("Failed to save system_log log_id=%s: %s", log_id, exc)
+            raise
+
+    def save_system_logs_batch(self, log_entries: list[dict]) -> int:
+        """
+        Insert multiple system log entries in an atomic transaction.
+
+        Returns:
+            Number of new rows inserted.
+        """
+        if not log_entries:
+            return 0
+        inserted = 0
+        now_str = datetime.datetime.now().isoformat()
+        rows_to_insert = []
+        for entry in log_entries:
+            lid = entry.get("log_id") or str(uuid.uuid4())
+            ts = entry.get("timestamp") or now_str
+            host = entry.get("source_host", "unknown")
+            service = entry.get("service", "system")
+            log_type = entry.get("log_type", "GENERAL")
+            sev = entry.get("severity", "INFO")
+            msg = entry.get("message", "")
+            raw = entry.get("raw_log", msg)
+            meta = entry.get("metadata_json") or entry.get("metadata", {})
+            meta_json = json.dumps(meta, ensure_ascii=False) if isinstance(meta, (dict, list)) else str(meta)
+            ingested_at = entry.get("ingested_at") or now_str
+            rows_to_insert.append((lid, ts, host, service, log_type, sev, msg, raw, meta_json, ingested_at))
+
+        try:
+            cur = self._conn.executemany(_INSERT_SYSTEM_LOG, rows_to_insert)
+            self._conn.commit()
+            inserted = cur.rowcount
+            _log.debug("Batch saved %d system logs.", inserted)
+            return inserted
+        except sqlite3.Error as exc:
+            _log.error("Failed to batch save system logs: %s", exc)
+            raise
+
+    def system_logs_count(self) -> int:
+        """Return total row count of system_logs table."""
+        cur = self._conn.execute("SELECT COUNT(*) FROM system_logs;")
+        return cur.fetchone()[0]
 
 
 

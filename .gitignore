@@ -42,9 +42,13 @@ test_out.txt
 # Databases & Runtime State
 *.db
 *.db-journal
+*.db-wal
+*.db-shm
 *.sqlite
 *.sqlite3
 data/*.db
+data/*.db-wal
+data/*.db-shm
 
 # Runtime Log Files & JSON Alert Dumps
 logs/*.log
@@ -58,3 +62,10 @@ data/**/*.csv
 # Note: network_detection_model.pkl is ~800MB (exceeds GitHub's 100MB hard limit)
 models/*.pkl
 models/*.joblib
+
+# Environment Variables & Secrets
+.env
+.env.local
+.env.*.local
+!.env.example
+

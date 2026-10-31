@@ -148,6 +148,34 @@ try:
 except ImportError:
     _INVESTIGATION_AVAILABLE = False
 
+# Stage 12: Response Playbooks Engine
+try:
+    from agents.response_playbooks.engine import ResponsePlaybookEngine as _ResponsePlaybookEngine
+    _PLAYBOOK_AVAILABLE = True
+except ImportError:
+    _PLAYBOOK_AVAILABLE = False
+
+# Stage 11: Threat Intelligence Agent
+try:
+    from agents.threat_intelligence.agent import ThreatIntelligenceAgent as _ThreatIntelligenceAgent
+    _INTEL_AVAILABLE = True
+except ImportError:
+    _INTEL_AVAILABLE = False
+
+# Stage 14: Google Gemini Flash Reasoning Agent
+try:
+    from agents.llm_reasoning.agent import GeminiReasoningAgent as _GeminiReasoningAgent
+    _REASONING_AVAILABLE = True
+except ImportError:
+    _REASONING_AVAILABLE = False
+
+# Content & Context Inspection Agent (Phase 1)
+try:
+    from agents.content_inspection.agent import ContentInspectionAgent as _ContentInspectionAgent
+    _CONTENT_INSPECTION_AVAILABLE = True
+except ImportError:
+    _CONTENT_INSPECTION_AVAILABLE = False
+
 
 # ---------------------------------------------------------------------------
 # Logging -- file only so terminal stays clean during demos
@@ -406,6 +434,34 @@ class SOCPipeline:
             except Exception as _ice:
                 _log.warning("[Stage 10] Threat investigation init failed: %s", _ice)
 
+        self.playbook_engine = None
+        if _PLAYBOOK_AVAILABLE:
+            try:
+                self.playbook_engine = _ResponsePlaybookEngine()
+            except Exception as _pbe:
+                _log.warning("[Stage 12] Response playbook engine init failed: %s", _pbe)
+
+        self.intel_agent = None
+        if _INTEL_AVAILABLE:
+            try:
+                self.intel_agent = _ThreatIntelligenceAgent(log_to_file=self.log_alerts)
+            except Exception as _iae:
+                _log.warning("[Stage 11] Threat intelligence agent init failed: %s", _iae)
+
+        self.reasoning_agent = None
+        if _REASONING_AVAILABLE:
+            try:
+                self.reasoning_agent = _GeminiReasoningAgent(log_to_file=self.log_alerts)
+            except Exception as _rae:
+                _log.warning("[Stage 14] Gemini reasoning agent init failed: %s", _rae)
+
+        self.content_agent = None
+        if _CONTENT_INSPECTION_AVAILABLE:
+            try:
+                self.content_agent = _ContentInspectionAgent()
+            except Exception as _cie:
+                _log.warning("[Content Inspection] agent init failed: %s", _cie)
+
     def process_event(self, event: dict, persist: bool = True) -> dict:
         """
         Process a single network flow event through the complete multi-agent pipeline.
@@ -491,20 +547,52 @@ class SOCPipeline:
                 _log.error("[Stage 6] Anomaly agent failed for event_id=%s: %s", eid, _ae)
                 anomaly_alert = None
 
-        # 3. Alert Correlation Agent
+        # 2b. Content & Context Inspection Agent (Phase 1)
+        # Check preceding compromise state on entity window
+        entity_key = src_ip or dst_ip or "default"
+        preceding_comp = False
+        if self.correlation_agent is not None and hasattr(self.correlation_agent, "has_preceding_compromise"):
+            preceding_comp = self.correlation_agent.has_preceding_compromise(entity_key)
+
+        content_report = None
+        if self.content_agent is not None:
+            try:
+                content_report = self.content_agent.inspect_transfer(
+                    event_id=eid,
+                    destination=dst_ip,
+                    flow_features=event.get("features", {}),
+                    preceding_compromise=preceding_comp,
+                )
+            except Exception as _cie_err:
+                _log.error("[Content Inspection] Failed for event_id=%s: %s", eid, _cie_err)
+
+        # 3. Alert Correlation Agent (Single-Event & Stateful Attack Sequence Progression)
         incident = None
+        sequence_incident = None
+        current_alerts = [alert]
+        if anomaly_alert:
+            current_alerts.append(anomaly_alert)
+
         if self.correlation_agent is not None:
             try:
-                current_alerts = [alert]
-                if anomaly_alert:
-                    current_alerts.append(anomaly_alert)
+                # 3a. Single-event correlation (exact event_id grouping)
                 incidents_out = self.correlation_agent.correlate(current_alerts)
                 if incidents_out:
                     incident = incidents_out[0]
+
+                # 3b. Stateful sliding-window progression ingestion (Phase 2)
+                if hasattr(self.correlation_agent, "ingest_telemetry"):
+                    sequence_incident = self.correlation_agent.ingest_telemetry(
+                        event=event,
+                        alerts=current_alerts,
+                        content_report=content_report,
+                    )
+                    if not incident and sequence_incident:
+                        incident = sequence_incident
             except Exception as _cae:
                 _log.error("[Stage 7] Correlation failed for event_id=%s: %s", eid, _cae)
 
-        # 4. Threat Assessment Engine (Stage 9A)
+        # 4. Threat Assessment Engine (Stage 9A & Phase 4 Context-Aware Synthesis)
         assessment = None
         if self.threat_engine is not None:
             try:
@@ -513,11 +601,13 @@ class SOCPipeline:
                     anomaly_alert=anomaly_alert,
                     event_id=eid,
                     actual_label=actual,
+                    content_inspection=content_report,
+                    sequence_incident=sequence_incident,
                 )
             except Exception as _tae:
                 _log.error("[Stage 9A] Threat assessment failed for event_id=%s: %s", eid, _tae)
 
-        # 5. Threat Investigation Coordinator (Stage 10)
+        # 5. Threat Investigation Coordinator (Stage 10 & Phase 4)
         investigation = None
         if self.investigation_coord is not None and assessment is not None:
             try:
@@ -526,13 +616,57 @@ class SOCPipeline:
                     event=event,
                     network_alert=alert,
                     anomaly_alert=anomaly_alert,
-                    incident=incident,
+                    incident=incident or sequence_incident,
                     threat_assessment=assessment,
+                    content_inspection=content_report,
+                    sequence_incident=sequence_incident,
                 )
             except Exception as _inv_err:
                 _log.error("[Stage 10] Investigation failed for event_id=%s: %s", eid, _inv_err)
 
-        # 6. Central Storage Persistence
+        # 5b. Threat Intelligence Enrichment (Stage 11)
+        threat_intel = None
+        if self.intel_agent is not None and (assessment is not None and assessment.get("category") != "Benign" or src_ip):
+            try:
+                target_ip = src_ip or dst_ip
+                if target_ip:
+                    threat_intel = self.intel_agent.lookup_indicator(
+                        indicator_type="ip",
+                        indicator_value=target_ip,
+                        force_refresh=False,
+                    )
+            except Exception as _ie:
+                _log.debug("[Stage 11] Threat intel lookup skipped/failed for %s: %s", eid, _ie)
+
+        # 6. Google Gemini Flash Incident Reasoning (Stage 14 & Phase 4)
+        reasoning = None
+        if self.reasoning_agent is not None and (assessment is not None or incident is not None or sequence_incident is not None):
+            try:
+                reasoning = self.reasoning_agent.reason_incident(
+                    incident=incident or sequence_incident,
+                    event=event,
+                    threat_assessment=assessment,
+                    threat_investigation=investigation,
+                    threat_intel=threat_intel,
+                )
+            except Exception as _re:
+                _log.error("[Stage 14] Gemini reasoning failed for event_id=%s: %s", eid, _re)
+
+        # 7. Response Playbooks Engine (Stage 12)
+        playbook = None
+        if self.playbook_engine is not None and assessment is not None:
+            try:
+                playbook = self.playbook_engine.evaluate(
+                    event=event,
+                    threat_assessment=assessment,
+                    threat_investigation=investigation,
+                    threat_intel=threat_intel,
+                    llm_reasoning=reasoning,
+                )
+            except Exception as _pbe_err:
+                _log.error("[Stage 12] Playbook evaluation failed for event_id=%s: %s", eid, _pbe_err)
+
+        # 8. Central Storage Persistence
         persisted = False
         if persist and _STORAGE_AVAILABLE:
             try:
@@ -543,10 +677,16 @@ class SOCPipeline:
                         _store.save_alert(anomaly_alert)
                     if incident:
                         _store.save_incident(incident)
+                    if sequence_incident and sequence_incident != incident:
+                        _store.save_incident(sequence_incident)
                     if assessment:
                         _store.save_assessment(assessment)
                     if investigation:
                         _store.save_investigation(investigation)
+                    if reasoning and hasattr(_store, "save_llm_reasoning"):
+                        _store.save_llm_reasoning(reasoning)
+                    if playbook and hasattr(_store, "save_playbook"):
+                        _store.save_playbook(playbook)
                 persisted = True
                 _log.debug("Saved to soc.db: event_id=%s", eid)
             except Exception as _db_exc:
@@ -561,11 +701,98 @@ class SOCPipeline:
             "network_alert": alert,
             "anomaly_alert": anomaly_alert,
             "incident": incident,
+            "sequence_incident": sequence_incident,
+            "content_inspection": content_report,
             "threat_assessment": assessment,
             "investigation": investigation,
             "investigation_triggered": bool(investigation is not None),
+            "threat_intel": threat_intel,
+            "reasoning": reasoning,
+            "reasoning_triggered": bool(reasoning is not None and reasoning.get("status") == "SUCCESS"),
+            "playbook": playbook,
+            "playbook_triggered": bool(playbook is not None),
             "persisted": persisted,
             "processing_time_s": total_time,
+        }
+
+    def process_system_log(self, system_log: dict, persist: bool = True) -> dict:
+        """
+        Process a host system log event (e.g. auth.log, sudo, file access) through the SOC pipeline.
+        Enriches stateful temporal correlation windows and evaluates Content & Context Inspection.
+        """
+        t_start = time.perf_counter()
+        log_id = system_log.get("log_id") or str(uuid.uuid4())
+        system_log["log_id"] = log_id
+        service = system_log.get("service", "")
+        msg = system_log.get("message", "")
+        user = system_log.get("user")
+        source_host = system_log.get("source_host", "victim-vm")
+
+        # Check preceding compromise for this host
+        preceding_comp = False
+        if self.correlation_agent and hasattr(self.correlation_agent, "has_preceding_compromise"):
+            if source_host:
+                preceding_comp = self.correlation_agent.has_preceding_compromise(source_host)
+
+        # Run Content Inspection if log reflects file access, data transfer, or command execution
+        content_report = None
+        if self.content_agent is not None:
+            cmd_lower = msg.lower()
+            has_transfer_signal = any(
+                tok in cmd_lower
+                for tok in [
+                    "rsync", "curl", "docker", "rclone", "git", "scp", "nc", "ncat",
+                    ".env", "id_rsa", "/etc/shadow", "tar", "zip", "upload", "download"
+                ]
+            )
+            if has_transfer_signal or service in ("rsync", "curl", "ssh", "scp", "docker"):
+                try:
+                    vol_bytes = system_log.get("volume_bytes")
+                    content_report = self.content_agent.inspect_transfer(
+                        event_id=log_id,
+                        process_name=service or "bash",
+                        command_line=msg,
+                        user=user,
+                        destination=source_host,
+                        volume_bytes=vol_bytes,
+                        preceding_compromise=preceding_comp,
+                    )
+                except Exception as _ce:
+                    _log.error("[Content Inspection] Log inspection failed for log_id=%s: %s", log_id, _ce)
+
+        # Ingest into stateful temporal correlation agent
+        sequence_incident = None
+        if self.correlation_agent and hasattr(self.correlation_agent, "ingest_telemetry"):
+            try:
+                sequence_incident = self.correlation_agent.ingest_telemetry(
+                    system_log=system_log,
+                    content_report=content_report,
+                )
+            except Exception as _cae:
+                _log.error("[Correlation] System log ingestion failed for log_id=%s: %s", log_id, _cae)
+
+        # Central Storage Persistence
+        persisted = False
+        if persist and _STORAGE_AVAILABLE:
+            try:
+                with _AlertStore() as _store:
+                    inserted = _store.save_system_log(system_log)
+                    if sequence_incident:
+                        _store.save_incident(sequence_incident)
+                persisted = True
+            except Exception as _db_exc:
+                _log.error("[Storage] Failed to save system_log %s to soc.db: %s", log_id, _db_exc)
+
+        return {
+            "status": "PROCESSED",
+            "log_id": log_id,
+            "service": service,
+            "source_host": source_host,
+            "content_inspection": content_report,
+            "sequence_incident": sequence_incident,
+            "has_preceding_compromise": preceding_comp,
+            "persisted": persisted,
+            "processing_time_s": round(time.perf_counter() - t_start, 6),
         }
 
 

@@ -164,12 +164,12 @@ section("STEP 4: Error Handling Tests")
 base_row = df_test.drop(columns=[TARGET]).iloc[[0]].copy()
 
 # Test A: Missing required feature
-def test_missing_feature():
+def _case_missing_feature():
     bad_input = base_row.drop(columns=["Dst Port"])
     agent.analyze(bad_input)
 
 # Test B: Non-numeric feature value (string in a numeric column)
-def test_non_numeric():
+def _case_non_numeric():
     bad_input = base_row.copy()
     bad_input["Dst Port"] = "NOT_A_NUMBER"
     result = agent.analyze(bad_input)
@@ -177,7 +177,7 @@ def test_non_numeric():
     print(f"      Prediction (median-filled): {result[0]['prediction']}")
 
 # Test C: NaN value in input
-def test_nan_value():
+def _case_nan_value():
     bad_input = base_row.copy()
     bad_input["Flow Duration"] = float("nan")
     result = agent.analyze(bad_input)
@@ -185,22 +185,32 @@ def test_nan_value():
     print(f"      Prediction (nan filled with median): {result[0]['prediction']}")
 
 # Test D: Extra irrelevant column
-def test_extra_column():
+def _case_extra_column():
     extra_input = base_row.copy()
     extra_input["ExtraJunkColumn"] = 999
     result = agent.analyze(extra_input)
     print(f"      Prediction (extra column ignored): {result[0]['prediction']}")
 
 # Test E: Normal valid input
-def test_valid_input():
+def _case_valid_input():
     result = agent.analyze(base_row.copy())
     print(f"      Prediction: {result[0]['prediction']} | Confidence: {result[0]['confidence']:.2%}")
 
-safe_test("A -- Missing required feature (expect ValueError)",   test_missing_feature)
-safe_test("B -- Non-numeric value (expect median-fill + result)", test_non_numeric)
-safe_test("C -- NaN in input    (expect median-fill + result)",  test_nan_value)
-safe_test("D -- Extra column    (expect it is ignored)",         test_extra_column)
-safe_test("E -- Normal input    (expect clean prediction)",      test_valid_input)
+safe_test("A -- Missing required feature (expect ValueError)",   _case_missing_feature)
+safe_test("B -- Non-numeric value (expect median-fill + result)", _case_non_numeric)
+safe_test("C -- NaN in input    (expect median-fill + result)",  _case_nan_value)
+safe_test("D -- Extra column    (expect it is ignored)",         _case_extra_column)
+safe_test("E -- Normal input    (expect clean prediction)",      _case_valid_input)
+
+def test_network_agent_pytest_suite():
+    """Verify all network agent checks pass under pytest."""
+    import pytest
+    with pytest.raises(ValueError, match="Input is missing"):
+        _case_missing_feature()
+    _case_non_numeric()
+    _case_nan_value()
+    _case_extra_column()
+    _case_valid_input()
 
 # ---------------------------------------------------------------------------
 # STEP 5 -- Save alerts to JSON log

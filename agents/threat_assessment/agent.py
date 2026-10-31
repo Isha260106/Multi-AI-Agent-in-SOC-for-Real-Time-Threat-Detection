@@ -350,18 +350,22 @@ class ThreatAssessmentEngine:
         anomaly_alert: Union[dict, str, None] = None,
         event_id: Optional[str] = None,
         actual_label: Optional[str] = None,
+        content_inspection: Optional[Dict[str, Any]] = None,
+        sequence_incident: Optional[Dict[str, Any]] = None,
         **kwargs,
     ) -> Dict[str, Any]:
         """
-        Combine existing predictions and available scores into a unified threat assessment.
+        Combine existing predictions, content inspection, and attack sequences into a unified threat assessment.
 
         Args:
-            network_alert: Alert dict from NetworkDetectionAgent, or a raw prediction string.
-            anomaly_alert: Alert dict from AnomalyDetectionAgent, or a raw prediction string.
-            event_id     : Unique event UUID. If None, resolves from alert dicts or generates.
-            actual_label : Optional ground truth label for validation and telemetry.
-            **kwargs     : Direct overrides: network_prediction, anomaly_prediction,
-                           network_confidence, anomaly_score.
+            network_alert     : Alert dict from NetworkDetectionAgent, or a raw prediction string.
+            anomaly_alert     : Alert dict from AnomalyDetectionAgent, or a raw prediction string.
+            event_id          : Unique event UUID. If None, resolves from alert dicts or generates.
+            actual_label      : Optional ground truth label for validation and telemetry.
+            content_inspection: Optional ContentInspection report dict.
+            sequence_incident : Optional Coordinated Attack Sequence incident dict.
+            **kwargs          : Direct overrides: network_prediction, anomaly_prediction,
+                                network_confidence, anomaly_score.
 
         Returns:
             Structured threat assessment dictionary.
@@ -421,6 +425,12 @@ class ThreatAssessmentEngine:
             except (ValueError, TypeError):
                 anom_score = None
 
+        # Resolve overrides from kwargs if passed
+        if content_inspection is None and "content_inspection" in kwargs:
+            content_inspection = kwargs["content_inspection"]
+        if sequence_incident is None and "sequence_incident" in kwargs:
+            sequence_incident = kwargs["sequence_incident"]
+
         # Evaluate decision table
         category, severity, explanation = self.evaluate_decision_table(
             network_pred=net_pred,
@@ -428,6 +438,33 @@ class ThreatAssessmentEngine:
             network_conf=net_conf,
             anomaly_score=anom_score,
         )
+
+        # Context-Aware Synthesis: Incorporate Content Inspection & Attack Sequence
+        if content_inspection:
+            ci_verdict = content_inspection.get("verdict")
+            if ci_verdict == "GENUINE_USER_HIGH_VOLUME" and not content_inspection.get("is_attack"):
+                # Suppress false positives: High volume verified as genuine backup/development activity
+                if category in (CATEGORY_SUSPICIOUS_ANOMALY, CATEGORY_SUSPECTED_ATTACK):
+                    category = CATEGORY_BENIGN
+                    severity = SEVERITY_LOW
+                    explanation = (
+                        f"False positive suppressed: High-volume network flow verified as genuine user activity "
+                        f"by Content & Context Inspection. {content_inspection.get('explanation', '')}"
+                    )
+            elif ci_verdict == "EXFILTRATION_CRITICAL" or content_inspection.get("is_attack"):
+                category = CATEGORY_CONFIRMED_ATTACK
+                severity = SEVERITY_HIGH
+                explanation = (
+                    f"Critical exfiltration confirmed: Content & Context Inspection detected sensitive file or "
+                    f"untrusted process transfer. {content_inspection.get('explanation', '')}"
+                )
+
+        if sequence_incident and sequence_incident.get("is_coordinated_attack"):
+            category = CATEGORY_CONFIRMED_ATTACK
+            severity = sequence_incident.get("severity", SEVERITY_HIGH)
+            explanation = (
+                f"Coordinated Multi-Stage Attack confirmed: {sequence_incident.get('correlation_reason', '')}"
+            )
 
         now = datetime.datetime.now().isoformat()
         # Deterministic UUID5 assessment_id based on event_id for idempotency
@@ -452,6 +489,9 @@ class ThreatAssessmentEngine:
             },
             "explanation": explanation,
             "actual_label": actual_label,
+            "content_inspection": content_inspection,
+            "sequence_incident": sequence_incident,
+            "is_coordinated_attack": bool(sequence_incident and sequence_incident.get("is_coordinated_attack")),
             "timestamp": now,
             "created_at": now,
         }

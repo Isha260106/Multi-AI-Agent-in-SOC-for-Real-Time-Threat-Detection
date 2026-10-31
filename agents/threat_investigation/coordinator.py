@@ -424,25 +424,35 @@ class ThreatInvestigationCoordinator:
         anomaly_alert: Optional[Dict[str, Any]] = None,
         incident: Optional[Dict[str, Any]] = None,
         threat_assessment: Optional[Dict[str, Any]] = None,
+        content_inspection: Optional[Dict[str, Any]] = None,
+        sequence_incident: Optional[Dict[str, Any]] = None,
         force: bool = False,
     ) -> Optional[Dict[str, Any]]:
         """
         Coordinate an end-to-end multi-agent threat investigation for an event.
 
         Args:
-            event_id: Unique event UUID.
-            event: Optional raw event dict with features.
-            network_alert: Optional alert from Network Detection Agent.
-            anomaly_alert: Optional alert from Anomaly Detection Agent.
-            incident: Optional correlated incident dict.
-            threat_assessment: Optional assessment dict from ThreatAssessmentEngine.
-            force: If True, bypasses benign exclusion (useful for manual analyst CLI audits).
+            event_id          : Unique event UUID.
+            event             : Optional raw event dict with features.
+            network_alert     : Optional alert from Network Detection Agent.
+            anomaly_alert     : Optional alert from Anomaly Detection Agent.
+            incident          : Optional correlated incident dict.
+            threat_assessment : Optional assessment dict from ThreatAssessmentEngine.
+            content_inspection: Optional report from ContentInspectionAgent.
+            sequence_incident : Optional Coordinated Attack Sequence incident dict.
+            force             : If True, bypasses benign exclusion (useful for manual analyst CLI audits).
 
         Returns:
             Structured investigation report dictionary, or None if excluded.
         """
         if not event_id:
             raise ValueError("ThreatInvestigationCoordinator.investigate() requires a valid 'event_id'.")
+
+        # Resolve content_inspection and sequence_incident from threat_assessment if nested
+        if content_inspection is None and threat_assessment:
+            content_inspection = threat_assessment.get("content_inspection")
+        if sequence_incident is None and threat_assessment:
+            sequence_incident = threat_assessment.get("sequence_incident")
 
         cat = threat_assessment.get("category", "Unknown") if threat_assessment else "Unknown"
         sev = threat_assessment.get("severity", "INFORMATIONAL") if threat_assessment else "INFORMATIONAL"
@@ -486,6 +496,56 @@ class ThreatInvestigationCoordinator:
             corr_findings=corr_findings,
         )
 
+        # Enhance with Content Inspection and Attack Sequence context
+        findings_by_agent = {
+            "network_evidence": net_findings["findings"],
+            "anomaly_explanation": anom_findings["findings"],
+            "alert_correlation": corr_findings["findings"],
+        }
+        supporting_evidence = {
+            "network_facts": net_findings.get("observed_facts", {}),
+            "anomaly_facts": anom_findings.get("observed_facts", {}),
+            "incident_facts": corr_findings.get("observed_facts", {}),
+        }
+        conflicting_signals = list(corr_findings.get("conflicting_signals", []))
+
+        if content_inspection:
+            ci_findings = content_inspection.get("findings", [])
+            findings_by_agent["content_inspection"] = ci_findings
+            supporting_evidence["content_inspection_facts"] = {
+                "verdict": content_inspection.get("verdict"),
+                "volume_bytes": content_inspection.get("volume_bytes"),
+                "sensitive_matches": content_inspection.get("sensitive_matches", []),
+                "process": content_inspection.get("process_evaluation", {}),
+                "destination": content_inspection.get("destination_evaluation", {}),
+            }
+            if content_inspection.get("verdict") == "GENUINE_USER_HIGH_VOLUME":
+                summary_text = (
+                    "INVESTIGATION RESOLVED - GENUINE OPERATION: Deep content and process context inspection "
+                    "verified high data transfer as legitimate user activity (e.g. routine backup/dev sync). "
+                    "False positive suppressed."
+                )
+                inv_status = STATUS_CLOSED_BENIGN
+                recs = ["No active remediation required. Telemetry recorded as verified baseline transfer."]
+
+        if sequence_incident and sequence_incident.get("is_coordinated_attack"):
+            stages = sequence_incident.get("stages_detected", [])
+            findings_by_agent["sequence_progression"] = [
+                f"Multi-stage attack sequence confirmed: {' -> '.join(stages)}"
+            ]
+            supporting_evidence["attack_sequence_facts"] = {
+                "stages": stages,
+                "mitre_techniques": sequence_incident.get("mitre_techniques", []),
+                "stage_count": sequence_incident.get("stage_count"),
+                "events_count": sequence_incident.get("events_count"),
+            }
+            summary_text = (
+                f"INVESTIGATION CONFIRMED COORDINATED ATTACK SEQUENCE: Entity exhibited progression across "
+                f"{len(stages)} kill-chain stages ({' -> '.join(stages)}). Immediate containment recommended."
+            )
+            inv_status = STATUS_COMPLETED
+            recs.insert(0, f"Execute enterprise isolation playbook for confirmed MITRE stages: {', '.join(stages)}.")
+
         now = datetime.datetime.now().isoformat()
         # Deterministic UUID5 investigation_id to guarantee idempotency across replays
         investigation_id = str(uuid.uuid5(self._namespace, f"threat_investigation_{event_id}"))
@@ -497,17 +557,9 @@ class ThreatInvestigationCoordinator:
             "severity": sev,
             "investigation_status": inv_status,
             "summary": summary_text,
-            "findings_by_agent": {
-                "network_evidence": net_findings["findings"],
-                "anomaly_explanation": anom_findings["findings"],
-                "alert_correlation": corr_findings["findings"],
-            },
-            "supporting_evidence": {
-                "network_facts": net_findings.get("observed_facts", {}),
-                "anomaly_facts": anom_findings.get("observed_facts", {}),
-                "incident_facts": corr_findings.get("observed_facts", {}),
-            },
-            "conflicting_signals": corr_findings.get("conflicting_signals", []),
+            "findings_by_agent": findings_by_agent,
+            "supporting_evidence": supporting_evidence,
+            "conflicting_signals": conflicting_signals,
             "reasoning": [
                 *net_findings.get("reasoning", []),
                 *anom_findings.get("reasoning", []),

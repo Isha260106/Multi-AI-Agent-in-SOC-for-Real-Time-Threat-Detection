@@ -32,7 +32,7 @@ import logging
 import pathlib
 import sqlite3
 import sys
-from typing import Any
+from typing import Any, Dict, List, Optional, Tuple
 
 # ---------------------------------------------------------------------------
 # Project path
@@ -777,6 +777,309 @@ class ThreatIntelQueryStore(AlertQueryStore):
             "verdicts": {r["verdict"]: r["cnt"] for r in verdict_rows},
             "providers": {r["provider"]: r["cnt"] for r in provider_rows},
         }
+
+
+# ===========================================================================
+# Stage 12: Response Playbook Query Store
+# ===========================================================================
+
+def _playbook_row_to_dict(row: sqlite3.Row) -> dict:
+    d = dict(row)
+    for field in ("recommended_actions_json", "triggering_evidence_json", "audit_trail_json"):
+        if field in d:
+            clean_key = field.replace("_json", "")
+            try:
+                d[clean_key] = json.loads(d.pop(field)) if d[field] else []
+            except Exception:
+                d[clean_key] = []
+    d["dry_run"] = bool(d.get("dry_run", 1))
+    return d
+
+
+class ResponsePlaybookQueryStore:
+    """Read queries for response playbook recommendations in SQLite."""
+
+    def __init__(self, db_path: pathlib.Path = DB_PATH):
+        self._db_path = db_path
+        self._conn = None
+        self._connect()
+
+    def _connect(self) -> None:
+        if not self._db_path.exists():
+            raise FileNotFoundError(f"Database not found: {self._db_path}")
+        self._conn = sqlite3.connect(f"file:{self._db_path}?mode=ro", uri=True)
+        self._conn.row_factory = sqlite3.Row
+
+    def close(self) -> None:
+        if self._conn:
+            self._conn.close()
+            self._conn = None
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+        return False
+
+    def get_playbooks(
+        self,
+        limit: int = 50,
+        status: Optional[str] = None,
+        severity: Optional[str] = None,
+    ) -> list[dict]:
+        """Fetch latest playbooks with optional status or severity filters."""
+        query = "SELECT * FROM response_playbooks WHERE 1=1"
+        params: list[Any] = []
+        if status:
+            query += " AND UPPER(status) = UPPER(?)"
+            params.append(status.strip())
+        if severity:
+            query += " AND UPPER(severity) = UPPER(?)"
+            params.append(severity.strip())
+        query += " ORDER BY created_at DESC LIMIT ?"
+        params.append(max(1, limit))
+
+        rows = self._conn.execute(query, tuple(params)).fetchall()
+        return [_playbook_row_to_dict(r) for r in rows]
+
+    def get_playbook_by_id(self, playbook_id: str) -> Optional[dict]:
+        """Fetch single playbook by its unique UUID."""
+        row = self._conn.execute(
+            "SELECT * FROM response_playbooks WHERE playbook_id = ?;",
+            (playbook_id.strip(),),
+        ).fetchone()
+        return _playbook_row_to_dict(row) if row else None
+
+    def get_playbook_by_event_id(self, event_id: str) -> Optional[dict]:
+        """Fetch single playbook by its originating event UUID."""
+        row = self._conn.execute(
+            "SELECT * FROM response_playbooks WHERE event_id = ?;",
+            (event_id.strip(),),
+        ).fetchone()
+        return _playbook_row_to_dict(row) if row else None
+
+    def summary_stats_playbooks(self) -> dict[str, Any]:
+        """Aggregate summary counts of playbooks by status and severity."""
+        total = self._conn.execute("SELECT COUNT(*) FROM response_playbooks;").fetchone()[0]
+        status_rows = self._conn.execute(
+            "SELECT status, COUNT(*) as cnt FROM response_playbooks GROUP BY status;"
+        ).fetchall()
+        severity_rows = self._conn.execute(
+            "SELECT severity, COUNT(*) as cnt FROM response_playbooks GROUP BY severity;"
+        ).fetchall()
+        pending_approval = self._conn.execute(
+            "SELECT COUNT(*) FROM response_playbooks WHERE UPPER(status) = 'PENDING_APPROVAL';"
+        ).fetchone()[0]
+
+        return {
+            "total_playbooks": total,
+            "pending_approval": pending_approval,
+            "by_status": {r["status"]: r["cnt"] for r in status_rows},
+            "by_severity": {r["severity"]: r["cnt"] for r in severity_rows},
+        }
+
+
+def _reasoning_row_to_dict(row: sqlite3.Row) -> dict:
+    """Convert an SQLite Row from llm_reasoning into a structured dictionary."""
+    d = dict(row)
+    for json_col, target_key in [
+        ("mitre_techniques_json", "mitre_techniques"),
+        ("evidence_json", "evidence"),
+        ("uncertainties_json", "uncertainties"),
+        ("recommended_actions_json", "recommended_actions"),
+        ("additional_evidence_json", "additional_evidence_needed"),
+    ]:
+        val = d.pop(json_col, None)
+        if isinstance(val, str) and val:
+            try:
+                d[target_key] = json.loads(val)
+            except Exception:
+                d[target_key] = []
+        else:
+            d[target_key] = []
+    d["is_mock"] = bool(d.get("is_mock", 0))
+    return d
+
+
+class LLMReasoningQueryStore:
+    """Read queries for LLM incident reasoning records in SQLite."""
+
+    def __init__(self, db_path: pathlib.Path = DB_PATH):
+        self._db_path = db_path
+        self._conn = None
+        self._connect()
+
+    def _connect(self) -> None:
+        if not self._db_path.exists():
+            raise FileNotFoundError(f"Database not found: {self._db_path}")
+        self._conn = sqlite3.connect(f"file:{self._db_path}?mode=ro", uri=True)
+        self._conn.row_factory = sqlite3.Row
+
+    def close(self) -> None:
+        if self._conn:
+            self._conn.close()
+            self._conn = None
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+        return False
+
+    def get_recent_reasoning(self, limit: int = 50, status: Optional[str] = None) -> list[dict]:
+        """Fetch latest reasoning records with optional status filter."""
+        query = "SELECT * FROM llm_reasoning WHERE 1=1"
+        params: list[Any] = []
+        if status:
+            query += " AND UPPER(status) = UPPER(?)"
+            params.append(status.strip())
+        query += " ORDER BY created_at DESC LIMIT ?"
+        params.append(max(1, limit))
+
+        rows = self._conn.execute(query, tuple(params)).fetchall()
+        return [_reasoning_row_to_dict(r) for r in rows]
+
+    def get_reasoning_by_id(self, reasoning_id: str) -> Optional[dict]:
+        """Fetch single reasoning record by reasoning UUID."""
+        row = self._conn.execute(
+            "SELECT * FROM llm_reasoning WHERE reasoning_id = ?;",
+            (reasoning_id.strip(),),
+        ).fetchone()
+        return _reasoning_row_to_dict(row) if row else None
+
+    def get_reasoning_by_event_id(self, event_id: str) -> Optional[dict]:
+        """Fetch latest reasoning record for an originating event UUID."""
+        row = self._conn.execute(
+            "SELECT * FROM llm_reasoning WHERE event_id = ? ORDER BY created_at DESC LIMIT 1;",
+            (event_id.strip(),),
+        ).fetchone()
+        return _reasoning_row_to_dict(row) if row else None
+
+    def get_reasoning_by_incident_id(self, incident_id: str) -> Optional[dict]:
+        """Fetch latest reasoning record for a correlated incident UUID."""
+        row = self._conn.execute(
+            "SELECT * FROM llm_reasoning WHERE incident_id = ? ORDER BY created_at DESC LIMIT 1;",
+            (incident_id.strip(),),
+        ).fetchone()
+        return _reasoning_row_to_dict(row) if row else None
+
+    def summary_stats_reasoning(self) -> dict[str, Any]:
+        """Summary statistics for LLM reasoning records."""
+        total = self._conn.execute("SELECT COUNT(*) FROM llm_reasoning;").fetchone()[0]
+        status_rows = self._conn.execute(
+            "SELECT status, COUNT(*) as cnt FROM llm_reasoning GROUP BY status;"
+        ).fetchall()
+        mock_count = self._conn.execute(
+            "SELECT COUNT(*) FROM llm_reasoning WHERE is_mock = 1;"
+        ).fetchone()[0]
+
+        return {
+            "total_reasoning": total,
+            "mock_reasoning": mock_count,
+            "by_status": {r["status"]: r["cnt"] for r in status_rows},
+        }
+
+
+def _system_log_row_to_dict(row: sqlite3.Row) -> dict:
+    """Convert a system_logs sqlite3.Row to a plain Python dict."""
+    d = dict(row)
+    if "metadata_json" in d and d["metadata_json"]:
+        try:
+            d["metadata"] = json.loads(d["metadata_json"])
+        except (json.JSONDecodeError, TypeError):
+            d["metadata"] = {}
+    else:
+        d["metadata"] = {}
+    return d
+
+
+class SystemLogQueryStore:
+    """Read-only query interface for system_logs table in SQLite."""
+
+    def __init__(self, db_path: pathlib.Path = DB_PATH):
+        self._db_path = db_path
+        self._conn = None
+        self._connect()
+
+    def _connect(self) -> None:
+        if not self._db_path.exists():
+            raise FileNotFoundError(f"Database not found: {self._db_path}")
+        self._conn = sqlite3.connect(f"file:{self._db_path}?mode=ro", uri=True)
+        self._conn.row_factory = sqlite3.Row
+
+    def close(self) -> None:
+        if self._conn:
+            self._conn.close()
+            self._conn = None
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+        return False
+
+    def get_recent_logs(
+        self,
+        limit: int = 50,
+        service: Optional[str] = None,
+        log_type: Optional[str] = None,
+        severity: Optional[str] = None,
+        source_host: Optional[str] = None,
+    ) -> list[dict]:
+        """Fetch latest system logs with optional filters."""
+        query = "SELECT * FROM system_logs WHERE 1=1"
+        params: list[Any] = []
+        if service:
+            query += " AND UPPER(service) = UPPER(?)"
+            params.append(service.strip())
+        if log_type:
+            query += " AND UPPER(log_type) = UPPER(?)"
+            params.append(log_type.strip())
+        if severity:
+            query += " AND UPPER(severity) = UPPER(?)"
+            params.append(severity.strip())
+        if source_host:
+            query += " AND UPPER(source_host) LIKE UPPER(?)"
+            params.append(f"%{source_host.strip()}%")
+        query += " ORDER BY timestamp DESC, id DESC LIMIT ?"
+        params.append(max(1, limit))
+
+        rows = self._conn.execute(query, tuple(params)).fetchall()
+        return [_system_log_row_to_dict(r) for r in rows]
+
+    def get_log_by_id(self, log_id: str) -> Optional[dict]:
+        """Fetch single log by log_id UUID."""
+        row = self._conn.execute(
+            "SELECT * FROM system_logs WHERE log_id = ?;", (log_id.strip(),)
+        ).fetchone()
+        return _system_log_row_to_dict(row) if row else None
+
+    def summary_stats_logs(self) -> dict[str, Any]:
+        """Summary statistics for system logs."""
+        cur = self._conn.cursor()
+        total = cur.execute("SELECT COUNT(*) FROM system_logs;").fetchone()[0]
+        services = cur.execute(
+            "SELECT service, COUNT(*) as cnt FROM system_logs GROUP BY service ORDER BY cnt DESC LIMIT 10;"
+        ).fetchall()
+        types = cur.execute(
+            "SELECT log_type, COUNT(*) as cnt FROM system_logs GROUP BY log_type ORDER BY cnt DESC LIMIT 10;"
+        ).fetchall()
+        severities = cur.execute(
+            "SELECT severity, COUNT(*) as cnt FROM system_logs GROUP BY severity;"
+        ).fetchall()
+
+        return {
+            "total_logs": total,
+            "by_service": {r["service"]: r["cnt"] for r in services},
+            "by_type": {r["log_type"]: r["cnt"] for r in types},
+            "by_severity": {r["severity"]: r["cnt"] for r in severities},
+        }
+
+
+
 
 
 
